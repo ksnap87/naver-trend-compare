@@ -383,24 +383,6 @@ function applySpikeStyles(sid, cat, datasets, labels) {{
     }});
 }}
 
-// ── 툴팁 포지셔너: 뉴스 있는 월만 우측 상단 고정 ────
-Chart.Tooltip.positioners.smartPos = function(items, pos) {{
-    if (!items.length) return false;
-    const chart = this.chart;
-    const sid   = chart._sid;
-    const cat   = chart._cat;
-    const lbl   = chart.data.labels[items[0].index];
-    const evSrc = sid === 'trend' ? trendEvents : subscribeEvents;
-    const hasNews = evSrc && evSrc[cat] && items.some(item => {{
-        const brand = chart.data.datasets[item.datasetIndex].label;
-        return evSrc[cat][brand] && evSrc[cat][brand][lbl];
-    }});
-    if (hasNews) {{
-        const area = chart.chartArea;
-        return {{ x: area.right, y: area.top, xAlign: 'right', yAlign: 'bottom' }};
-    }}
-    return Chart.Tooltip.positioners.average.call(this, items, pos);
-}};
 
 // ── 차트 인스턴스 저장소 ─────────────────────────────
 const chartInstances = {{ trend: {{}}, subscribe: {{}} }};
@@ -550,7 +532,7 @@ function buildSection(sid, sectionData, months) {{
                 interaction: {{ mode:'index', intersect:false }},
                 plugins: {{
                     legend: {{ position:'top', labels:{{ font:{{size:11}}, padding:10 }} }},
-                    tooltip: {{ position: 'smartPos', callbacks: {{ label: c => {{
+                    tooltip: {{ position: 'nearest', callbacks: {{ label: c => {{
                         const base = `  ${{c.dataset.label}}: ${{c.parsed.y.toFixed(1)}}`;
                         const evSrc = sid === 'trend' ? trendEvents : subscribeEvents;
                         const brand = c.dataset.label;
@@ -569,8 +551,6 @@ function buildSection(sid, sectionData, months) {{
                 }}
             }}
         }});
-        chartInstances[sid][cat]._sid = sid;
-        chartInstances[sid][cat]._cat = cat;
         updateFooter(cid, cat, series, sectionData.brandsPerCat, labels);
     }});
 
