@@ -429,9 +429,9 @@ function buildNewsAnnotations(sid, cat, labels, series) {{
             const _info      = info;
             out[key] = {{
                 type: 'label',
-                xValue: period,
+                xValue: li,
                 yValue: yVal,
-                yAdjust: -22,
+                yAdjust: -20,
                 content: '★',
                 font: {{ size: 15, weight: 'bold' }},
                 color: '#FFD700',
