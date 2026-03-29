@@ -383,16 +383,10 @@ function applySpikeStyles(sid, cat, datasets, labels) {{
     }});
 }}
 
-// ── 툴팁 포지셔너: 차트 상단 고정 ────────────────────
+// ── 툴팁 포지셔너: 차트 우측 상단 고정 ──────────────
 Chart.Tooltip.positioners.topFixed = function(items, pos) {{
     const area = this.chart.chartArea;
-    const x = Math.max(area.left, Math.min(pos.x, area.right));
-    return {{
-        x,
-        y: area.top + 4,
-        xAlign: x > (area.left + area.right) / 2 ? 'right' : 'left',
-        yAlign: 'bottom'
-    }};
+    return {{ x: area.right, y: area.top, xAlign: 'right', yAlign: 'bottom' }};
 }};
 
 // ── 차트 인스턴스 저장소 ─────────────────────────────
