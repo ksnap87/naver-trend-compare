@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>네이버 월별 검색량 비교 20260329</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -48,12 +49,6 @@ section{max-width:1400px;margin:28px auto 0;padding:0 20px}
 .card-title{font-size:14px;font-weight:700;color:#222;margin-bottom:10px}
 .chart-wrap{height:175px;position:relative}
 .card-footer{font-size:11.5px;color:#555;margin-top:8px;text-align:center;min-height:18px}
-/* gap rows */
-.gap-rows{margin-top:7px;display:flex;flex-direction:column;gap:3px;align-items:center}
-.gap-row{font-size:11px;color:#666;display:flex;align-items:center;gap:6px;white-space:nowrap}
-.gap-row .gap-lbl{color:#999;min-width:38px;text-align:right}
-.gap-row .gap-vals{color:#444}
-.gap-row .gap-val{font-weight:700}
 /* keywords */
 .kw-details{margin-top:8px;border-top:1px solid #eee;padding-top:7px}
 .kw-details summary{font-size:11px;color:#999;cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:4px}
@@ -394,38 +389,46 @@ function slicedData(sectionData, months) {
     return { periods: pSlice, labels: lSlice, series: seriesSlice };
 }
 
-// ── footer 텍스트 업데이트 ────────────────────────────
-function gapHtml(labels, seriesSlice, cat) {
-    const s = seriesSlice[cat]['삼성'];
-    const l = seriesSlice[cat]['LG'];
-    if (!s || !l) return '';
-    const n = s.length;
-    function rowHtml(label, si, li, lbl) {
-        const sv = si, lv = li;
-        const gap = lv !== 0 ? (sv - lv) / lv * 100 : 0;
-        const sign = gap >= 0 ? '+' : '';
-        const gapColor = gap >= 0 ? '#1428A0' : '#A50034';
-        const leader = gap >= 0 ? '삼성↑' : 'LG↑';
-        return `<div class="gap-row">
-            <span class="gap-lbl">${lbl}</span>
-            <span class="gap-vals">
-                <span style="color:#1428A0">삼성 ${sv.toFixed(1)}</span> vs
-                <span style="color:#A50034">LG ${lv.toFixed(1)}</span>
-                &nbsp;갭 <span class="gap-val" style="color:${gapColor}">${sign}${gap.toFixed(1)}%</span>
-                <span style="color:${gapColor};font-size:10px">(${leader})</span>
-            </span>
-        </div>`;
+// ── 갭 annotation 생성 ───────────────────────────────
+function buildGapAnnotations(cat, seriesSlice, labels) {
+    const s = seriesSlice[cat] && seriesSlice[cat]['삼성'];
+    const l = seriesSlice[cat] && seriesSlice[cat]['LG'];
+    if (!s || !l || s.length === 0) return {};
+
+    function anno(key, xLabel, sv, lv) {
+        const gap   = lv !== 0 ? (sv - lv) / lv * 100 : 0;
+        const color = gap >= 0 ? '#1428A0' : '#A50034';
+        const sign  = gap >= 0 ? '+' : '';
+        return {
+            type: 'line',
+            xMin: xLabel, xMax: xLabel,
+            yMin: Math.min(sv, lv), yMax: Math.max(sv, lv),
+            borderColor: color,
+            borderWidth: 2,
+            arrowHeads: {
+                start: { enabled: true, fill: true, width: 7, length: 7 },
+                end:   { enabled: true, fill: true, width: 7, length: 7 }
+            },
+            label: {
+                display: true,
+                content: `${sign}${gap.toFixed(1)}%`,
+                backgroundColor: color + 'ee',
+                color: '#fff',
+                font: { size: 11, weight: 'bold' },
+                padding: { x: 5, y: 3 },
+                borderRadius: 4,
+                position: '50%'
+            }
+        };
     }
-    const startLbl = labels[0];
-    const endLbl   = labels[n-1];
-    let html = '<div class="gap-rows">';
-    // 최신월(마지막 인덱스) 먼저, 시작월 아래
-    html += rowHtml(labels, s[n-1], l[n-1], endLbl);
-    if (n > 1) html += rowHtml(labels, s[0], l[0], startLbl);
-    html += '</div>';
-    return html;
+
+    const n   = s.length;
+    const out = { gapEnd: anno('gapEnd', labels[n-1], s[n-1], l[n-1]) };
+    if (n > 1) out.gapStart = anno('gapStart', labels[0], s[0], l[0]);
+    return out;
 }
 
+// ── footer 텍스트 업데이트 ────────────────────────────
 function updateFooter(cid, cat, seriesSlice, brandsPerCat, labels) {
     const brands = brandsPerCat[cat];
     const avgs = {};
@@ -437,9 +440,8 @@ function updateFooter(cid, cat, seriesSlice, brandsPerCat, labels) {
     const COLORS = {"삼성":"#1428A0","LG":"#A50034","코웨이":"#00A651"};
     const parts = brands.map(b=>`<span style="color:${COLORS[b]||'#333'}">${b} ${avgs[b].toFixed(1)}</span>`);
     const wc = COLORS[winner]||'#333';
-    const avgHtml = parts.join('  |  ') + `&nbsp;→&nbsp;<strong style="color:${wc}">${winner} 우세</strong>`;
-    const gap = (brands.includes('삼성') && brands.includes('LG')) ? gapHtml(labels, seriesSlice, cat) : '';
-    document.getElementById(cid+'_footer').innerHTML = avgHtml + gap;
+    document.getElementById(cid+'_footer').innerHTML =
+        parts.join('  |  ') + `&nbsp;→&nbsp;<strong style="color:${wc}">${winner} 우세</strong>`;
 }
 
 // ── 바차트 업데이트 ──────────────────────────────────
@@ -493,7 +495,8 @@ function buildSection(sid, sectionData, months) {
                 interaction: { mode:'index', intersect:false },
                 plugins: {
                     legend: { position:'top', labels:{ font:{size:11}, padding:10 } },
-                    tooltip: { callbacks: { label: ctx=>`  ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
+                    tooltip: { callbacks: { label: ctx=>`  ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } },
+                    annotation: { annotations: buildGapAnnotations(cat, series, labels) }
                 },
                 scales: {
                     x: { grid:{display:false}, ticks:{font:{size:10}} },
@@ -546,6 +549,7 @@ function filterSection(sid, months, btn) {
         brands.forEach((b, di) => {
             chart.data.datasets[di].data = series[cat][b];
         });
+        chart.options.plugins.annotation.annotations = buildGapAnnotations(cat, series, labels);
         chart.update();
         updateFooter(cid, cat, series, sectionData.brandsPerCat, labels);
     });
