@@ -19,15 +19,16 @@ SSL_CTX.check_hostname = False
 SSL_CTX.verify_mode = ssl.CERT_NONE
 
 # ── API 설정 ──────────────────────────────────────────────
-CLIENT_ID     = "dXwlnIqtjUpjCCxXZuTK"
-CLIENT_SECRET = "GPBMzhJhaS"
+import os as _os
+CLIENT_ID     = _os.environ.get("NAVER_CLIENT_ID",     "dXwlnIqtjUpjCCxXZuTK")
+CLIENT_SECRET = _os.environ.get("NAVER_CLIENT_SECRET", "GPBMzhJhaS")
 API_URL       = "https://openapi.naver.com/v1/datalab/search"
 CALL_INTERVAL = 0.3  # seconds
 
 # ── 기간 설정 (최근 1년, 월간) ─────────────────────────────
 today     = datetime.today()
 end_date  = today.strftime("%Y-%m-%d")
-start_date = (today - timedelta(days=365)).strftime("%Y-%m-%d")
+start_date = "2025-01-01"
 
 # ── 카테고리 정의 ──────────────────────────────────────────
 CATEGORIES = [
