@@ -61,9 +61,25 @@ section{max-width:1400px;margin:28px auto 0;padding:0 20px}
 .kw-brand{font-weight:700;white-space:nowrap;padding-right:8px!important;width:44px}
 .kw-pill{display:inline-block;border:1px solid;border-radius:10px;padding:1px 7px;margin:2px 2px;font-size:10px;background:#fafafa}
 hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
+/* 뉴스 툴팁 */
+#news-tt{
+    display:none;position:fixed;z-index:9999;pointer-events:none;
+    background:#fff;border-radius:10px;padding:11px 14px;max-width:280px;
+    box-shadow:0 4px 20px rgba(0,0,0,.18);border:1px solid #eee;
+}
+#news-tt .nt-brand{font-size:11px;font-weight:700;margin-bottom:3px}
+#news-tt .nt-date{font-size:10px;color:#aaa;margin-bottom:6px}
+#news-tt .nt-title{font-size:12px;color:#222;line-height:1.5}
+#news-tt .nt-hint{font-size:10px;color:#888;margin-top:7px}
 </style>
 </head>
 <body>
+<div id="news-tt">
+  <div class="nt-brand" id="nt-brand"></div>
+  <div class="nt-date"  id="nt-date"></div>
+  <div class="nt-title" id="nt-title"></div>
+  <div class="nt-hint">클릭하여 기사 보기 →</div>
+</div>
 <header>
   <h1>📊 네이버 월별 검색량 비교 차트</h1>
   <p>기간: 25.03 ~ 26.03 &nbsp;|&nbsp; 단위: 월간 상대지수 &nbsp;|&nbsp; 생성일: 20260329</p>
@@ -364,6 +380,73 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         colors:  {"삼성": "#1428A0", "LG": "#A50034", "코웨이": "#00A651"}
     };
 
+    const trendEvents = {"냉장고": {"삼성": {"25.07": {"title": "삼성전자 'AI 가전 3대장', 에어컨∙냉장고∙세탁기 7월 판매량 급증 - kipost.net", "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE5rYjlxbGZ1eUtmSzdpT1pNVVBwNXNnbnVLV1I3SThHSzFGQ0dUWE1VTjNnZFVReUt2b3R6Q01MY3RLX2R2SjU3VXNRaTRqY2F4WnV3VGszQUh4Mzh2dHR6dVQ1SUVkNFlB0gFsQVVfeXFMTW5DMmpwUnI1dlFmWXczTjFrM1lnMVB5ZTRIOUsxYU9seEtTaWN6YjdmNUFUckFQaVQtaTdiU2hQYjk1dXh2R011aFFSUmpZUEU3OWJBb1g5U083OWlPajdBdE1vcjJhX0IxYVdm?oc=5", "pubDate": "2025.07.30"}}, "LG": {"25.07": {"title": "카카오뱅크, LG전자와 손잡고 ‘한달적금with LG전자’ 출시 - CNET Korea", "link": "https://news.google.com/rss/articles/CBMiV0FVX3lxTE1RUFppTjFGNnV2aGcyTUtRZjgyaUFXSjE1eWNzM3NzdVdNdXR3MEdGU1ExUDdPR1B4SEI1RWNuVXBZb1VKYWU4cGJHdW9SVHVvQ3VadXBNcw?oc=5", "pubDate": "2025.08.20"}}}, "세탁기": {"삼성": {"25.07": {"title": "삼성전자, AI 기능 강화한 2025년형 ‘비스포크 AI 원바디’ 세탁기∙건조기 출시 - samsung.com", "link": "https://news.google.com/rss/articles/CBMiuwJBVV95cUxQZ2JkZXZmRHZFUzloLVg1eGJxQkU0ZEliLW14YUprQUZJZEZjSXBlTlRKaWQ5WkJDQ3J0MXZ6T3hxMVlfZ3BmeGxKWDduTVdIYXgxWk5QZ1hNWThYQWJPVjh3QkpIZXE2bVh6ejAya01CQ0libGJLSHNOTEdLWm1qRFM0QXlhRTJFRlBLQUZ5dGROYW5XOXh1YjQzNXdHcHl4TGd3NXZ5dlJ6UkVhZnFYOFVRVmdKaGhkWHY5T1NFd2FsTmxNT2dqY0hoX29LVDRFUy1TRVJ3bWExWU5SaXZ6ZVduTmVadnlCRDk0RUpBSFRtWE53VDZtdGRvQmw3VjE0WFBweVdiUEotSWkyWDBnMUp2YnBzMWZwOVFDS3p6aHBiTjIzS3dXTTFFRWN1RHNRcEcxR0dTZ1Ftb28?oc=5", "pubDate": "2025.07.04"}}, "LG": {"25.06": {"title": "LG전자, '작아진' 일체형 세탁건조기 내놓는다…세탁용량 11㎏ - 전자신문", "link": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE9mSkJZRFFYRi1OQTNMY3B0SlFzV1dnRGpuSWY1aER5WDl2bVF0TEtwTUd1anhQUXVvLTNOT2YwNXZQWTBHVV9lR1dkbkNpdw?oc=5", "pubDate": "2025.06.24"}}}, "에어컨": {"삼성": {"25.07": {"title": "삼성전자 2025년 2분기 실적발표 컨퍼런스콜 전문 - 디일렉", "link": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE1XVDNneFg1Q09aaEVfTnpsSVNMeE4tSEViYmtLa3FPX2FsXzhiTVZRQ3VNdC1CS1dUNFF5RzlQaGg3bkRWV19SazdPbjhUaDVhcDRQX2RIU1FDTHJYNkpjQllWZEFMdw?oc=5", "pubDate": "2025.07.31"}}, "LG": {"25.07": {"title": "[산업이모저모]\"스타벅스에서 텀블러 세척\"...LG전자 전용 세척기 'LG 마이컵' 홍보 나서 - 녹색경제신문", "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE1HRFVpX1lrRXl4U21JSnJraG9SaDRJeU9raUQxRUVFTVhDQWpEY25TMTNkeC11RzlGWERLR1Y5T2wtbnJfWG9ldFpwQTJUdkR6Z3N1VS1OYm11MkpTS1ljaHBITDV1b19v?oc=5", "pubDate": "2025.07.30"}}}, "TV": {"LG": {"26.01": {"title": "TV사업 명 다했나···삼성전자·LG전자 TV, 中질주에 난항 - 시사저널e", "link": "https://news.google.com/rss/articles/CBMickFVX3lxTE1BLXQ1MzlsakVvMGFHOTd2UXg2SWg4MTdOYjAxWlFpTEtzc1RWQ2tyRzdvMlQ4NXBReEpFQzFsOEJtb0x2Wm1NdWdBVTRrb3JLUklLMm4yY0lLWGxnQUpiclltMEZtM2JPWnFNX2daTWJjZ9IBdkFVX3lxTFBleEJIdm13ZTNYYW8zemttZkFHVWpzeWxWSUc3Q2ZPZ3h6eE1pZFVFWFZKZC1qaWFWeVVoYzFZOEVNbzJJWngyczM0a1NXb3JkR1VkdzMtR1BsMzBnS2F3dWlYSnVRSkRhS2tTMUNTREh4blBqZlE?oc=5", "pubDate": "2026.01.12"}}}, "건조기": {"삼성": {"25.10": {"title": "삼성전자, '비스포크 AI 콤보' 신규 색상 2종 출시 - 뉴스핌", "link": "https://news.google.com/rss/articles/CBMiXEFVX3lxTFBCNUpabGMxSGhJR2lmNzUteGUybTJVMkV1QUdhM3JoTEV1eUtla1YzaDVjMTBqS1hhV3BvQy1sczdyV1RUZnhPb1cxdGttdU1NWElJaGRsYW5EY3Rx?oc=5", "pubDate": "2025.11.06"}}}, "정수기": {"삼성": {"25.08": {"title": "삼성전자, AI 기반의 ‘가전제품 원격진단’ 글로벌 120여 개 국가로 확대 - samsung.com", "link": "https://news.google.com/rss/articles/CBMiwgJBVV95cUxQWkdEMTRNZVJIQ0hGc3V1Ykt3RVhvMVpYTEsxY2RsUXplclRZMG41N1hHQno5cnB5TGRuSlY4OG42eDZGQ3h0VWZpd3hGT2VEdEZsR0lHaEdEVjV0Y0g4Y053M0pIQ0RDZkJGeV9YQWZ2a1Bnb1RjeUF3QUtrUlRHa2lSbWJIRW81N2oxaWZFcjltaWNRdHdyOUYxbENZZ1hWOEhEOFdkNVdseDk3aFppR2dCTnpTYjd3akRGQVVabzNNZENyN3NIZl9hS0ktak5Sc19FaGtvNVo0ZnRxekdWSlh1ZnlVa1E1aFpjTlFOakJsZ1RpbjZGQUZGdzhUeXZld1JyUUtkd3lLOEI0d2t6dGFlcjJvdHhrRlpMaHY5RWM3MlZTSFIxM19Za3EtLU1VRnJOOWlzNHNacGpTSnN2aE1R?oc=5", "pubDate": "2025.08.21"}, "25.09": {"title": "\"삼성, 폴더블폰으로 美 시장서 애플 추격…점유율 23%→31%\" - 뉴스퀘스트", "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE9Ub3NvRVZmcmo3dFBWOXZsd09PWHZlbUJSenV3cmxJTzQyNlJwdmtOdFRNT3VMdG9ZRWhYWmY3SnpfSEdLdDBoRDBlSF9UZFZEelVsWWNpcno2Zy16ZVlOd2ZDbm02alpfWHhFZGw5OA?oc=5", "pubDate": "2025.08.18"}}, "LG": {"25.04": {"title": "[뉴스락 특별기획] 삼성·LG, 'K가전 동부전선' 끝까지 사수하라 - 뉴스락", "link": "https://news.google.com/rss/articles/CBMibEFVX3lxTE5lZmpNc2xrOVNXcnMtYXo2Z3FrWmJEaGE0RGlUanNvb09UdDVGZzZzOWlMSnBHMExkZEpINHlUMk9nTzFzV0lMRzIxSXNsY3NsOWtTUWNWNlp2U3VmejAxc1VqVHlJWlpfZkxKag?oc=5", "pubDate": "2025.05.31"}}}, "공기청정기": {"LG": {"25.03": {"title": "반려견-반려묘, 가전시장에서도 ‘VIP’… 급성장하는 펫 가전시장 - 동아일보", "link": "https://news.google.com/rss/articles/CBMidkFVX3lxTE02bkg2Q1RoSUxxSjEzWnFRRnRjUWF2UExtRjRGWkV4NTdTdnB3N1U5c1NkTDlYUWR3YnhxNEdiOUtRZ2VfUW9xeE5Nb1ZNcUVSMW9LYURybGpueGFuZ2RMNzV2N25GUTNMendzY3ZVTVpzRDFIYWfSAWZBVV95cUxQVDQ3TGFWMnlFb0ZoQWpVb21qd2lUaE9lQWdKTkMzZDl0LUVJYjVzZ0FYbGJEUFk1eTF4N2xHMEJMc0dSUkx6N3I5MlZ0b2VHZE5nNWd3NUZMM2FGVkNmVDQ4YWRWeVE?oc=5", "pubDate": "2025.04.03"}}}, "식기세척기": {"삼성": {"25.03": {"title": "삼성전자, 더 똑똑해진 '비스포크 AI 식기세척기' 출시 - 서울경제TV", "link": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE9MSGs1eERQajgtcDhFc29MVXdsWDR1QXVwNW95RVhWRTBmQzBjbm55Z05yWmlEYi05aHEzay1xeVZGWUxRRmtnelZ3bGVaaWYwazJxai04ZGwzb290dVc5YjZMV2Q?oc=5", "pubDate": "2025.02.20"}}, "LG": {"25.03": {"title": "삼성전자, ‘AI 맞춤 세척+’로 업그레이드된 ‘비스포크 AI 식기세척기’ 신제품 출시 - samsung.com", "link": "https://news.google.com/rss/articles/CBMiwAJBVV95cUxPVll1NnFSNVpndThkbGVHeU01NnFEWUdZMVhGbTMwMFF5bHhuM1pTQVl4dDhQREtXeDMyRFdIOXZqSHVkUjhNUXpZQ0RmWEJwRGNVZ0Y1clN2WEE0RHB6OTI0UHJTQmJNZGJiM2Q0ZVNqVHVzUHMyc3kzc25Rb1Bpbl91eFhNYXhBRTYyZHpxanZiVG9xby10eGpYTTlFNWtZUGdsMVJtM3NUVUw5VWJYSDNvREw0YzlFbUZBSU1LZWNTRUZ2Z09wUTBGUGhPVE9Mb2Q4ZXF2MFE5QzB6MXJ0TERQX3JlWEl1TUkzcGRBRF9RRWhFTERQMHZybUJibllROVM4N25TQnV4RVB2U2xCbFlOQWFNSHFaanVabFpjX3BtUVpHVV95OUJvbDFxWEpTT0NRNUVDOE9sR04xaElDTA?oc=5", "pubDate": "2025.02.20"}, "25.07": {"title": "[산업이모저모]\"스타벅스에서 텀블러 세척\"...LG전자 전용 세척기 'LG 마이컵' 홍보 나서 - 녹색경제신문", "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE1HRFVpX1lrRXl4U21JSnJraG9SaDRJeU9raUQxRUVFTVhDQWpEY25TMTNkeC11RzlGWERLR1Y5T2wtbnJfWG9ldFpwQTJUdkR6Z3N1VS1OYm11MkpTS1ljaHBITDV1b19v?oc=5", "pubDate": "2025.07.30"}}}, "청소기": {"삼성": {"25.07": {"title": "삼성, 신형 로봇청소기 출시 지연…中 공세에 완성도 보강 - 딜사이트", "link": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE9UelFRWHNENDhMV083eHgxNHM0dEpORTVhdWNpMFVRSlVCa3oyWDc3Q212Mk04dTdFY2o5WUxHRVZKRjhCZWIwOWJjckhEcUE?oc=5", "pubDate": "2025.08.22"}}, "LG": {"25.03": {"title": "“AI 홈으로 일상을 혁신하다” 삼성전자, 2025년형 비스포크 AI 라인업 공개 - samsung.com", "link": "https://news.google.com/rss/articles/CBMiqgJBVV95cUxOMzI1NktZMGtqMUlYUG8zVkJQRjhHckhRaVA1eHRWX3VTcTR4RHo4cEI1YUItUnh1X1JyQy1JRnh5Z2loQmtGM3dxalJlTjhHTWNXVzNudzVBQlpBTm9WYjB5SWFfbDZoRlhMQXVjb0V5VzFzUkJHX2xJb29QUzdPWjhDLWNDVE9fbVpDa2c4dExYR216TjFoSXJqTldBYmhVLWZPTTVkTWh1ODIxYUpQVGo2WW5IVUVnaGd0Ync0cEsxTHVnb0RuMTdWbEpnUEo3bnhsUEltNU9oRElpdEpBYmpqdjEtWmNTRG8wbmk0ZldHei1Bekk0R290LWl0NTF2cjJ5WW85cGFQdGxEckFid3NPTHRlMHVsMzVTdWNMcVV6NVloYUJMRlpn?oc=5", "pubDate": "2025.03.30"}}}, "로봇청소기": {"삼성": {"26.02": {"title": "삼성전자, 주한미국상공회의소 행사서 '2026년형 로봇청소기' 신제품 전시 - 사회적경제뉴스", "link": "https://news.google.com/rss/articles/CBMiP0FVX3lxTFBRQ1BMZkZuQkVwbU4wWGRRX0lqRTUwbjRwY01FSHdpcEFLT1FnNk1sU05LdTlxSGRWcTFHZkw0SQ?oc=5", "pubDate": "2026.03.23"}}, "LG": {"25.09": {"title": "[IFA2025] 올해 관전 키포인트는 韓-中 '로봇 청소기' 대전 - 인더스트리뉴스", "link": "https://news.google.com/rss/articles/CBMickFVX3lxTE5qVHdnRklHTzdZQ2hQMWVpTnp1R091ZG16WjNucUV2N2F6dzhCdHRTWXl4ZVZxREhoMDFfN09lOXVPSXFZNU5KdDRSQlNhN3V6cFhqdW5pVGM5VnhscS1XeVlESDdnd1RJMnI5bHJXYW05dw?oc=5", "pubDate": "2025.09.04"}}}, "의류관리기": {"삼성": {"26.03": {"title": "이사·혼인 ‘쑥’…가전업계 ‘반등 타이밍’ 왔다 - 에너지경제신문", "link": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE42U1hBQkstM3BPSC1IMl9kcGRkUXRDcmJVUEg1LTZ4WHhIckQ5NjVWMGdtbWpjOHdGX3Zya0hyaGNqZ2FIa3dUVXlveDBOeWhBSzFFOWhXaHdsSlE?oc=5", "pubDate": "2026.03.28"}}}};
+    const subscribeEvents = {"구독브랜드": {"삼성": {"25.03": {"title": "삼성전자, 비스포크 AI 콤보 판매처 대폭 확대...소비자 접점 넓힌다 - 팍스경제TV", "link": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE81bzlVYXJLOXlnOXpqRno5bnBQQXM2OE5JQzNodkJlbmJsY2t2SWlNU2p1RmlrOHFHX0M3aFZBenRRaWZRcDM2eVdyN3Y3QmtkRWt0LU84bDFMaDFTdkR5Wl9sQWJVcTNo?oc=5", "pubDate": "2025.04.20"}, "26.01": {"title": "삼성전자 '가전, 더 편리하게 쓰고 할인 받아 구입하세요' - 테크M", "link": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE0wdzFkOHAzUHJiUTY3LXNZemFqenRpdF9qZERRODh1bEwxbUQ3OFAzdzFiVUU4YWlEakczUjJTblRVaVQyS2J4eXBxLWtkMzl3SUxBUWgtSnZ0MFNzMnp4SzhpdVB5UdIBakFVX3lxTE9BOVVwcVRXMktLYmF4bHFLTElRSV9YRzd0ZkxHZzVZcFhaQkthZDd4cFNlT0NsQUxQeEcwN1AwNlVWZnVEM0h4RG5WWjM0QWhGVVhqOTNNa3p6NnVPb0owLWltanFWYzByLXc?oc=5", "pubDate": "2025.12.19"}}, "LG": {"25.03": {"title": "LG전자, 2025년형 올레드 TV 글로벌 시장에 본격 출시 - 지디넷코리아", "link": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE1WNGxPdktFNnEwdkJWSUh2Y0ZLRnBiWG85OXVFUDZ3NThEOWZZUGFNZ3ZXZzlnNTdHdHNiZUd0dmZJN0VQV2ZjT3hOQTM2dmk3R2ZYNVd3?oc=5", "pubDate": "2025.03.26"}}, "코웨이": {"26.03": {"title": "코웨이, 얼음 정수기부터 안마의자·요실금 치료기까지…헬스케어 강자로 - v.daum.net", "link": "https://news.google.com/rss/articles/CBMiT0FVX3lxTFAwU291eEhsVkdiVFo1RmJPcVREVlFEbGV6SEhuTTFrbVdOWFl5dlVqRmpfdjFDVXFhbjZ5M25TUUdsN2JVRWRkcWRPUVNGSGc?oc=5", "pubDate": "2026.03.23"}}}, "정수기구독": {"삼성": {"25.09": {"title": "\"삼성, 폴더블폰으로 美 시장서 애플 추격…점유율 23%→31%\" - 뉴스퀘스트", "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE9Ub3NvRVZmcmo3dFBWOXZsd09PWHZlbUJSenV3cmxJTzQyNlJwdmtOdFRNT3VMdG9ZRWhYWmY3SnpfSEdLdDBoRDBlSF9UZFZEelVsWWNpcno2Zy16ZVlOd2ZDbm02alpfWHhFZGw5OA?oc=5", "pubDate": "2025.08.18"}}, "LG": {"25.04": {"title": "[뉴스락 특별기획] 삼성·LG, 'K가전 동부전선' 끝까지 사수하라 - 뉴스락", "link": "https://news.google.com/rss/articles/CBMibEFVX3lxTE5lZmpNc2xrOVNXcnMtYXo2Z3FrWmJEaGE0RGlUanNvb09UdDVGZzZzOWlMSnBHMExkZEpINHlUMk9nTzFzV0lMRzIxSXNsY3NsOWtTUWNWNlp2U3VmejAxc1VqVHlJWlpfZkxKag?oc=5", "pubDate": "2025.05.31"}}, "코웨이": {"25.08": {"title": "코웨이, 제주 첫 매장 노형동에 오픈 外 - 톱데일리", "link": "https://news.google.com/rss/articles/CBMiUEFVX3lxTE1NTF85Q3d6OXE3S0tJemtQcFZzdEVHZnB5R0FmdDVSVG1ONXRFdldpRmF2YzNuWDhPYmE1UnlkNUlyQXJBNUdlZTBFMm1SMlBz?oc=5", "pubDate": "2025.08.01"}}}, "공기청정기구독": {"LG": {"25.12": {"title": "“새 기능 탑재·디자인 업그레이드” … 삼성 '로봇청소기'·LG '공기청정기' 신작 출시 예고 - 전자신문", "link": "https://news.google.com/rss/articles/CBMiTkFVX3lxTFBIVGRFNS04N2JqbnFYVnBVYWJGNU5JazQ0V3B5ZkJTRE5zTTFPWXNBNlhHZEFNVUxON3FYaHZnazJndTNNbldSWG1kTDhTUQ?oc=5", "pubDate": "2025.11.13"}}, "코웨이": {"25.03": {"title": "[Who Is ?] 서장원 코웨이 대표이사 사장 - 비즈니스포스트", "link": "https://news.google.com/rss/articles/CBMic0FVX3lxTE5EVWM3U1BCazBLQlpTUnZDVUNnOEJXSXlsWWlSelNlZTVWbVV6MGNqbnhLVkNMYnpEOXFWeGFrVk1nNkZpS3BVVzIxWG5FdUxIMGl0blNMUE5uWVFaN1h0aGx2bmpaZEdGSnBIbDd4eVhZQjg?oc=5", "pubDate": "2025.04.25"}}}, "에어컨구독": {"삼성": {"25.09": {"title": "삼성·LG, 인도서 AI 세탁기 신제품 경쟁…14억 가전 시장 정조준 - CEO스코어데일리", "link": "https://news.google.com/rss/articles/CBMia0FVX3lxTE9hV2F2LVQzNnZkMlJVdFZkVl9XS0NQMmFDZlVyQ2d6NzR4b2RrQjdnX1MyRzl5V1Utb3dXSkNodmdmd1NJZU8wcVZPeU5KN09kamZ1TzBiNUJoUkRnb1hCRVBQY1RNZjFXbkxv?oc=5", "pubDate": "2025.09.15"}}, "LG": {"25.09": {"title": "LG전자 2025년 9월 3주차 위클리 뉴스 ✨ - LG전자 뉴스룸", "link": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBOLWFwZ3ZuMmZUeVdfT2RnMEhrQ3oxWEhTOXNiYkFnUWgxbFFRQThQd2dydXdlZmtNMTNMVmp3R2JQYldiNmYzUUNvWFVUekNiVURicWNqZHc2MXc?oc=5", "pubDate": "2025.09.26"}}}, "건조기구독": {"삼성": {"25.12": {"title": "삼성전자, 삼성 아트 스토어에 2025년 ‘아트 바젤 마이애미 비치’ 컬렉션 선보여 - 뉴스와이어", "link": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE4ycEpNbzFuNFdwdzNUWGVaUXB3bjlFaUNjT2tmdTkzc05oZmZ6ZGVzYl9QNkdHVHBnR3VpSEhYR3dHaDZwd3ZfMXh1czZSUjVucnEzWWMwUkg0OFZtX2JN?oc=5", "pubDate": "2025.12.03"}, "26.01": {"title": "[CES 2026 프리뷰] 삼성·LG, AI와 로봇으로 가전 경험을 바꿔라 - 비즈한국", "link": "https://news.google.com/rss/articles/CBMiVkFVX3lxTFA0bjNYTnZLbmR6XzN3dFJMVFZ0eDF1TGw0bVZXa1B1NjBlZzgyUklrTlRmTDkybWFqZDJzQjBLY2kxbVNyQjN3eWQ2TjN3UjhtZFVyTFNn?oc=5", "pubDate": "2025.12.26"}}, "LG": {"25.03": {"title": "설치 공간 40% 감소… ‘꿈의 가전’ 올인원 세탁건조기 뜬다 - segye.com", "link": "https://news.google.com/rss/articles/CBMiWEFVX3lxTE5UMVhzNjlRcTNUZEtSelNVdjU1bkltWmpYbjF2Y3hZeXdLRTBYbGx3M2J6SmxyUzl5VDZpb25yb2FQZ2JYNXFwanNSbzZwOXN6QzZuWVJZZkjSAVRBVV95cUxOWldoY0tEQTEyTWs3RnJFaDhnNVFUTlRmMHdrSVJibklTZURyanBpWnJJYnhEaW5vV0l5X290eTNQNUsyMHF1dW9wQU9yUHJTZEdSTng?oc=5", "pubDate": "2025.04.29"}, "25.08": {"title": "삼성전자, AI 기능 강화한 2025년형 ‘비스포크 AI 원바디’ 세탁기∙건조기 출시 - samsung.com", "link": "https://news.google.com/rss/articles/CBMiuwJBVV95cUxQZ2JkZXZmRHZFUzloLVg1eGJxQkU0ZEliLW14YUprQUZJZEZjSXBlTlRKaWQ5WkJDQ3J0MXZ6T3hxMVlfZ3BmeGxKWDduTVdIYXgxWk5QZ1hNWThYQWJPVjh3QkpIZXE2bVh6ejAya01CQ0libGJLSHNOTEdLWm1qRFM0QXlhRTJFRlBLQUZ5dGROYW5XOXh1YjQzNXdHcHl4TGd3NXZ5dlJ6UkVhZnFYOFVRVmdKaGhkWHY5T1NFd2FsTmxNT2dqY0hoX29LVDRFUy1TRVJ3bWExWU5SaXZ6ZVduTmVadnlCRDk0RUpBSFRtWE53VDZtdGRvQmw3VjE0WFBweVdiUEotSWkyWDBnMUp2YnBzMWZwOVFDS3p6aHBiTjIzS3dXTTFFRWN1RHNRcEcxR0dTZ1Ftb28?oc=5", "pubDate": "2025.07.04"}}}, "세탁기구독": {"삼성": {"25.03": {"title": "국내 올인원 세탁건조기 대표주자 삼성전자 ‘비스포크 AI 콤보’ 10만 대 판매 돌파 - 뉴스와이어", "link": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE15clpnbFV1SGNJa1pEcEdQMkI1ek1hMUxDaUg0Um05dTU0U01jbENCb09UdDNRQjhEZXlsYzQ2WHd3UVBINFhkT0E3MDk0RGZzaWdDZ3FpbWxxZllaaHNj?oc=5", "pubDate": "2025.04.29"}}, "LG": {"25.12": {"title": "삼성·LG ‘가전 수장’ 김철기·백승태···AI·로봇·중국 등 과제 산더미 - 시사저널e", "link": "https://news.google.com/rss/articles/CBMickFVX3lxTE01cWZuQUY1aENUOWd3bFprS2FhNjdtNmdzcWh1NlI2bHZ1SWdGTkpMSkdfTE5YLUtzN204RUJ1dm1rVUZXdm5WV1dzMUpRdzNLZWxsNld3N085M2Z5OFNrbkIwSWJ1M3RON0FoRW5yU1RBQdIBdkFVX3lxTE9RQWMzbS1GZm53YUVobmlBSnV5RWFHRDlybFYzR2dPVm5WbTllRWtmV1F3THAxRU14MkxEaC1PMkwydXFWTjJsMFVIWlNsVzBwc1VraVo3bjA2SFlrSkw5YzVUUFY1aG1tXzNOQ25vZXl1UE55LWc?oc=5", "pubDate": "2025.12.03"}}}, "식기세척기구독": {"삼성": {"25.04": {"title": "로청 '신혼 특수' 온다 … 韓·中 전쟁 승자는 - 뉴데일리 경제", "link": "https://news.google.com/rss/articles/CBMie0FVX3lxTFBZc2RmTnRoc0tOX0NjaGZTUDY5TndlcWN4bF9iUWZjSnllc2NhV3Y0YVBpanJ2d0xpZThEY19sRUg4bkJDVG03X015OEpqZEQtYmpDbDZqYTF0SGE4NFNlTGtYYkxxMy1lRkptaFktNGczRnVwMGY0bHN6dw?oc=5", "pubDate": "2025.05.03"}}, "LG": {"26.02": {"title": "LG전자, ‘LG 디오스 트루스팀 식기세척기’ 출시 7주년 맞아 ‘7대 페스티벌’ 개최 - LG전자 뉴스룸", "link": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE9jQ19KNGVqcjNsMlpLeUtWQnhUa2NweXJoVjVEamhYQndZM21EWmEtLTN0RWV4UVIzdnFOQ3AxcGZGQTlMNU9zZlFsYTdoNy12S0E?oc=5", "pubDate": "2026.01.12"}, "26.03": {"title": "LG전자 '플래그십 D5', 오픈 5개월 만에 베스트샵 단일매장 사상 최대 매출 - 청년일보", "link": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTE4yOFJxc2VfZlBzeGNWUVZVTGV0NThMZHdLa3FJNXdrV0JrUTJleEw1NXlUYzZ0c3BzT3NobGg4VWlTd1JGWWJLYTByWTl5MHNlQ2oxTzdHbzVvRWxNeGg5YzRBcWZnWmM?oc=5", "pubDate": "2026.02.09"}}}, "의류관리기구독": {"삼성": {"25.03": {"title": "[단독] 삼성 '에어드레서' 해외판매 일시 중단…\"신제품 출시준비\" - 신아일보", "link": "https://news.google.com/rss/articles/CBMicEFVX3lxTE9QMVZWeEYxNjdmN0phLUkwbDdYS1h5cl9lZTZlZVlocVBJQUlNUk9XWHo1VXVZaG5lT0VXdTV1X2ZjZUZmaVF6Ty1aTHJ4WXc2aU5QeGdMVWdHOVdUZHp6Nk9waUNab05pV2d4dllPajQ?oc=5", "pubDate": "2025.03.10"}, "25.12": {"title": "[이슈&논란] \"노트북 500만원 시대\" 삼성·LG 노트북 신제품 출고가 50만~100만원 '급등'…칩플레이션 폭풍에 스마트폰까지 직격 - 뉴스스페이스", "link": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE5ucjhnTFJfVDVsX2xnLVdpSlo2STFzWnRrVTJUU3BWeUREUEw1cFVNb1JYbC1oRDNFMFA0ejFXRHo1dFc1YUdMRWJ6Wm9SWkh6cW5Ta1JFbklZOXQwMWs0LQ?oc=5", "pubDate": "2026.01.19"}}, "LG": {"25.12": {"title": "\"한국 가전 기술의 산실\"…50살 맞은 'LG 가산 R&D 캠퍼스' - 연합뉴스", "link": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE5QNVJKeU1zYnhwY3B3SmF0NGdiZWtVd2szN3JrNzZhZHFQRHJoQWFNa1ZZVjlrbmNoY29QQnBYVUlNQ2VrN21CT1pndVd5Q1B0MzFWVHpUZ2RGRlXSAWBBVV95cUxQNklLTnpkS0VlNFg1RTA5cXFBX0QtS2ptaDdoc2FHcXlvNndqWG9NVnJadVZsS0xEbVlaUWU3QnpReko1Wjl0QzRNTFc0RTBmdFdnQ1JjOUFfWGpEUWxFRFo?oc=5", "pubDate": "2025.12.09"}, "26.02": {"title": "이사·혼인 ‘쑥’…가전업계 ‘반등 타이밍’ 왔다 - 에너지경제신문", "link": "https://news.google.com/rss/articles/CBMiW0FVX3lxTE42U1hBQkstM3BPSC1IMl9kcGRkUXRDcmJVUEg1LTZ4WHhIckQ5NjVWMGdtbWpjOHdGX3Zya0hyaGNqZ2FIa3dUVXlveDBOeWhBSzFFOWhXaHdsSlE?oc=5", "pubDate": "2026.03.28"}}}, "청소기구독": {"삼성": {"26.01": {"title": "中 천하였는데 분위기 돌변…반전 신호 켜진 삼성전자 제품 - 한국경제", "link": "https://news.google.com/rss/articles/CBMiWkFVX3lxTFB2T0ozNzNEbWNBNUx3dUUySWVvVk1EajI0cGlJMnNfXzZxLUNTbU9WMS1fcG5XdVZpcDNZbGhyUzhsZWd4bXVfU0FlYThYWS1aS1RIQVJXU3gtZ9IBVEFVX3lxTFBfUmZEWWYxY2VSOXBlWTJnTE1qUG9wZUlZZ2h1SGJaRVBydlJfNG91R0R6YXk4QzBVUTBnMk5VUWVRbG9fZnRRdjRaYVpyaWtQdkUxeg?oc=5", "pubDate": "2025.12.28"}}, "LG": {"25.07": {"title": "카카오뱅크, LG전자와 손잡고 ‘한달적금with LG전자’ 출시 - CNET Korea", "link": "https://news.google.com/rss/articles/CBMiV0FVX3lxTE1RUFppTjFGNnV2aGcyTUtRZjgyaUFXSjE1eWNzM3NzdVdNdXR3MEdGU1ExUDdPR1B4SEI1RWNuVXBZb1VKYWU4cGJHdW9SVHVvQ3VadXBNcw?oc=5", "pubDate": "2025.08.20"}}}, "로봇청소기구독": {"삼성": {"26.02": {"title": "삼성전자, 주한미국상공회의소 행사서 '2026년형 로봇청소기' 신제품 전시 - 사회적경제뉴스", "link": "https://news.google.com/rss/articles/CBMiP0FVX3lxTFBRQ1BMZkZuQkVwbU4wWGRRX0lqRTUwbjRwY01FSHdpcEFLT1FnNk1sU05LdTlxSGRWcTFHZkw0SQ?oc=5", "pubDate": "2026.03.23"}, "26.03": {"title": "삼성전자, DX부문 ‘2026년 상생협력 DAY’ 개최 - 사회적경제뉴스", "link": "https://news.google.com/rss/articles/CBMiP0FVX3lxTFA4WFFWak9EVlB1Z0loR3pOT01kdkd0Qk03YVZSZEpaeUJzYkRPN05OUUFZUUFQUXFpMFJCNEtiZw?oc=5", "pubDate": "2026.03.28"}}, "LG": {"26.02": {"title": "LG전자, 신형 로봇청소기 상반기 출시 목표…사업부 총력 - 딜사이트", "link": "https://news.google.com/rss/articles/CBMiT0FVX3lxTE8waFJRUnh3SXYxa19JNnJzdTNTLTMzYVZtWE51UWQwWENBbnF4eXVEZ2xmRmpIeV96a0VOenBpbkxLcWFFRDBRUWpKd1BGX1U?oc=5", "pubDate": "2026.03.17"}}}, "가전구독일반": {"삼성": {"25.09": {"title": "'조기 출격' 갤럭시 S25 FE·탭 S11, 삼성 하반기 실적 개선 시동 - 전자신문", "link": "https://news.google.com/rss/articles/CBMiTkFVX3lxTE15MUt5NHlYa05Tc0RfOGs0UG9odFVEc0pBZEcwVjBTY3FXSUdzUXJDVmhDaDhSa0JhRVJXZTJzWHd2dFl6QkU5ekRRTTNDUQ?oc=5", "pubDate": "2025.09.04"}}, "LG": {"25.09": {"title": "[3분기 실적] LG전자, 관세 악재 뚫고 실적 선방…가전·전장 선전 - 인더뉴스", "link": "https://news.google.com/rss/articles/CBMiZEFVX3lxTFBuVGdOckV6cjJ2SDBRNC16bzk0R2ljaFRZc1JnWE9TcXY5ajJEU2tRNVZraDhVaDRhWklENHpPNVVnamEwOGE2eDVMV0ZmQVFmcTJMaGRGUzhzaGpfRm5CMHhsMlM?oc=5", "pubDate": "2025.10.31"}}}};
+
+// ── 뉴스 툴팁 ────────────────────────────────────────
+let _mouseX = 0, _mouseY = 0;
+document.addEventListener('mousemove', e => { _mouseX = e.clientX; _mouseY = e.clientY; });
+
+function showNewsTooltip(brand, info, event) {
+    const tt = document.getElementById('news-tt');
+    const COLORS = {"삼성":"#1428A0","LG":"#A50034","코웨이":"#00A651"};
+    document.getElementById('nt-brand').style.color = COLORS[brand] || '#333';
+    document.getElementById('nt-brand').textContent = brand;
+    document.getElementById('nt-date').textContent  = info.pubDate;
+    document.getElementById('nt-title').textContent = info.title;
+    tt._link = info.link;
+    const x = (event && event.native) ? event.native.clientX : _mouseX;
+    const y = (event && event.native) ? event.native.clientY : _mouseY;
+    tt.style.left    = (x + 14) + 'px';
+    tt.style.top     = (y - 20) + 'px';
+    tt.style.display = 'block';
+}
+function hideNewsTooltip() {
+    document.getElementById('news-tt').style.display = 'none';
+}
+document.getElementById('news-tt').addEventListener('click', () => {
+    const link = document.getElementById('news-tt')._link;
+    if (link) window.open(link, '_blank');
+});
+document.getElementById('news-tt').style.pointerEvents = 'auto';
+document.getElementById('news-tt').style.cursor = 'pointer';
+
+// ── 뉴스 annotation 생성 ─────────────────────────────
+function buildNewsAnnotations(sid, cat, labels, series) {
+    const evSrc = sid === 'trend' ? trendEvents : subscribeEvents;
+    if (!evSrc || !evSrc[cat]) return {};
+    const out = {};
+    let idx = 0;
+    for (const brand of Object.keys(evSrc[cat])) {
+        for (const period of Object.keys(evSrc[cat][brand])) {
+            const li = labels.indexOf(period);
+            if (li < 0) continue;
+            const info       = evSrc[cat][brand][period];
+            const brandSer   = series[cat] && series[cat][brand];
+            const yVal       = brandSer ? brandSer[li] : null;
+            const key        = 'news_' + brand + '_' + idx;
+            const _brand     = brand;
+            const _info      = info;
+            out[key] = {
+                type: 'label',
+                xValue: period,
+                yValue: yVal,
+                yAdjust: -22,
+                content: '📌',
+                font: { size: 15 },
+                backgroundColor: 'transparent',
+                borderWidth: 0,
+                padding: 0,
+                enter(ctx, evt) { showNewsTooltip(_brand, _info, evt); },
+                leave()         { hideNewsTooltip(); },
+                click(ctx, evt) { window.open(_info.link, '_blank'); }
+            };
+            idx++;
+        }
+    }
+    return out;
+}
+
 // ── 차트 인스턴스 저장소 ─────────────────────────────
 const chartInstances = { trend: {}, subscribe: {} };
 const barInstances   = { trend: null, subscribe: null };
@@ -511,7 +594,7 @@ function buildSection(sid, sectionData, months) {
                 plugins: {
                     legend: { position:'top', labels:{ font:{size:11}, padding:10 } },
                     tooltip: { callbacks: { label: ctx=>`  ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } },
-                    annotation: { annotations: buildGapAnnotations(cat, series, labels, filterLabel) }
+                    annotation: { annotations: Object.assign({}, buildGapAnnotations(cat, series, labels, filterLabel), buildNewsAnnotations(sid, cat, labels, series)) }
                 },
                 scales: {
                     x: { grid:{display:false}, ticks:{font:{size:10}} },
@@ -565,7 +648,7 @@ function filterSection(sid, months, btn) {
         brands.forEach((b, di) => {
             chart.data.datasets[di].data = series[cat][b];
         });
-        chart.options.plugins.annotation.annotations = buildGapAnnotations(cat, series, labels, filterLabel);
+        chart.options.plugins.annotation.annotations = Object.assign({}, buildGapAnnotations(cat, series, labels, filterLabel), buildNewsAnnotations(sid, cat, labels, series));
         chart.update();
         updateFooter(cid, cat, series, sectionData.brandsPerCat, labels);
     });
