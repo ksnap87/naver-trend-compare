@@ -170,6 +170,38 @@ def build_js_data(section_id, data, periods, keyword_dict):
     )
 
 
+# ── 이벤트 로드 / JS 직렬화 ────────────────────────────────────────
+
+def load_events():
+    files = sorted(glob.glob(os.path.join(OUTPUT_DIR, "events_*.json")))
+    if not files:
+        return {}, {}
+    with open(files[-1], encoding="utf-8") as f:
+        d = json.load(f)
+    return d.get("trend", {}), d.get("subscribe", {})
+
+
+def build_js_events(trend_ev, subscribe_ev):
+    def convert(src):
+        out = {}
+        for cat, brands in src.items():
+            out[cat] = {}
+            for brand, pnews in brands.items():
+                out[cat][brand] = {}
+                for period, news in pnews.items():
+                    out[cat][brand][month_label(period)] = {
+                        "title":   news["title"],
+                        "link":    news["link"],
+                        "pubDate": news.get("pubDate", ""),
+                    }
+        return out
+
+    return "\n    const trendEvents = {t};\n    const subscribeEvents = {s};".format(
+        t=json.dumps(convert(trend_ev),     ensure_ascii=False),
+        s=json.dumps(convert(subscribe_ev), ensure_ascii=False),
+    )
+
+
 # ── 메인 ───────────────────────────────────────────────────────────
 
 def main():
@@ -193,6 +225,9 @@ def main():
 
     js_trend     = build_js_data("trend",     trend_data,     periods, TREND_KEYWORDS)
     js_subscribe = build_js_data("subscribe", subscribe_data, periods, SUBSCRIBE_KEYWORDS)
+
+    trend_ev, subscribe_ev = load_events()
+    js_events = build_js_events(trend_ev, subscribe_ev)
 
     start_lbl = month_label(periods[0])
     end_lbl   = month_label(periods[-1])
@@ -327,6 +362,26 @@ hr.divider{{border:none;border-top:1px solid #ddd;margin:32px 0 0}}
 <script>
 {js_trend}
 {js_subscribe}
+{js_events}
+
+// ── 스파이크 포인트 스타일 적용 ──────────────────────
+function applySpikeStyles(sid, cat, datasets, labels) {{
+    const evSrc = sid === 'trend' ? trendEvents : subscribeEvents;
+    datasets.forEach(ds => {{
+        const n = ds.data.length;
+        ds.pointStyle       = Array(n).fill('circle');
+        ds.pointRadius      = Array(n).fill(3);
+        ds.pointBorderWidth = Array(n).fill(1);
+        if (!evSrc || !evSrc[cat] || !evSrc[cat][ds.label]) return;
+        for (const period of Object.keys(evSrc[cat][ds.label])) {{
+            const li = labels.indexOf(period);
+            if (li < 0) continue;
+            ds.pointStyle[li]       = 'star';
+            ds.pointRadius[li]      = 9;
+            ds.pointBorderWidth[li] = 2;
+        }}
+    }});
+}}
 
 // ── 차트 인스턴스 저장소 ─────────────────────────────
 const chartInstances = {{ trend: {{}}, subscribe: {{}} }};
@@ -458,11 +513,13 @@ function buildSection(sid, sectionData, months) {{
                 borderColor: c,
                 backgroundColor: c+'18',
                 borderWidth: 2.5,
-                pointRadius: 3,
                 tension: 0.35,
                 fill: false
             }};
         }});
+        applySpikeStyles(sid, cat, datasets, labels);
+        const allVals = brands.flatMap(b => series[cat][b]);
+        const dataMax = Math.max(...allVals);
         const ctx = document.getElementById(cid);
         if (!ctx) return;
         chartInstances[sid][cat] = new Chart(ctx, {{
@@ -474,12 +531,22 @@ function buildSection(sid, sectionData, months) {{
                 interaction: {{ mode:'index', intersect:false }},
                 plugins: {{
                     legend: {{ position:'top', labels:{{ font:{{size:11}}, padding:10 }} }},
-                    tooltip: {{ callbacks: {{ label: ctx=>`  ${{ctx.dataset.label}}: ${{ctx.parsed.y.toFixed(1)}}` }} }},
+                    tooltip: {{ callbacks: {{ label: c => {{
+                        const base = `  ${{c.dataset.label}}: ${{c.parsed.y.toFixed(1)}}`;
+                        const evSrc = sid === 'trend' ? trendEvents : subscribeEvents;
+                        const brand = c.dataset.label;
+                        const lbl   = c.label;
+                        if (evSrc && evSrc[cat] && evSrc[cat][brand] && evSrc[cat][brand][lbl]) {{
+                            const t = evSrc[cat][brand][lbl].title;
+                            return [base, `  ★ ${{t.length > 45 ? t.slice(0,45)+'…' : t}}`];
+                        }}
+                        return base;
+                    }} }} }},
                     annotation: {{ annotations: buildGapAnnotations(cat, series, labels, filterLabel) }}
                 }},
                 scales: {{
                     x: {{ grid:{{display:false}}, ticks:{{font:{{size:10}}}} }},
-                    y: {{ beginAtZero:true, grid:{{color:'#f0f0f0'}}, ticks:{{font:{{size:10}}}} }}
+                    y: {{ beginAtZero:true, suggestedMax: dataMax*1.15, grid:{{color:'#f0f0f0'}}, ticks:{{font:{{size:10}}}} }}
                 }}
             }}
         }});
@@ -529,6 +596,9 @@ function filterSection(sid, months, btn) {{
         brands.forEach((b, di) => {{
             chart.data.datasets[di].data = series[cat][b];
         }});
+        applySpikeStyles(sid, cat, chart.data.datasets, labels);
+        const allVals = brands.flatMap(b => series[cat][b]);
+        chart.options.scales.y.suggestedMax = Math.max(...allVals) * 1.15;
         chart.options.plugins.annotation.annotations = buildGapAnnotations(cat, series, labels, filterLabel);
         chart.update();
         updateFooter(cid, cat, series, sectionData.brandsPerCat, labels);
@@ -579,6 +649,7 @@ buildSection('subscribe', subscribeData, 13);
         cards_subscribe=cards_subscribe,
         js_trend=js_trend,
         js_subscribe=js_subscribe,
+        js_events=js_events,
     )
 
     with open(out_path, "w", encoding="utf-8") as f:
