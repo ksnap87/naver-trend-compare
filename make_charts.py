@@ -73,8 +73,7 @@ SUBSCRIBE_KEYWORDS = {
     "로봇청소기구독": {"삼성": ["삼성 로봇청소기 렌탈","비스포크 로봇청소기 렌탈"],
                     "LG":   ["LG 로봇청소기 렌탈","코드제로 로봇청소기 렌탈"]},
     "가전구독일반":   {"삼성": ["삼성 가전 구독","삼성 가전 렌탈","삼성 구독 가전"],
-                    "LG":   ["LG 가전 구독","LG 가전 렌탈","LG 케어솔루션"],
-                    "코웨이":["코웨이 렌탈 추천","코웨이 가격","코웨이 렌탈 가격"]},
+                    "LG":   ["LG 가전 구독","LG 가전 렌탈","LG 케어솔루션"]},
 }
 
 # ── 유틸 ───────────────────────────────────────────────────────────
@@ -136,16 +135,20 @@ def build_cards_html(section_id, data, keyword_dict):
     return cards
 
 def build_js_data(section_id, data, periods, keyword_dict):
-    """차트 데이터를 JS 변수로 직렬화"""
+    """차트 데이터를 JS 변수로 직렬화 (keyword_dict에 없는 브랜드 제외)"""
     cats = list(data.keys())
-    # {cat: {brand: [v0,v1,...]}}
     series = {}
+    brands_per_cat = {}
     for cat, brands in data.items():
+        allowed = set(keyword_dict[cat].keys()) if cat in keyword_dict else set(brands.keys())
         series[cat] = {}
+        brands_per_cat[cat] = []
         for brand, vals in brands.items():
+            if brand not in allowed:
+                continue
             series[cat][brand] = [round(vals.get(p, 0), 2) for p in periods]
+            brands_per_cat[cat].append(brand)
 
-    brands_per_cat = {cat: list(brands.keys()) for cat, brands in data.items()}
     labels = [month_label(p) for p in periods]
 
     return """
@@ -244,6 +247,12 @@ section{{max-width:1400px;margin:28px auto 0;padding:0 20px}}
 .card-title{{font-size:14px;font-weight:700;color:#222;margin-bottom:10px}}
 .chart-wrap{{height:175px;position:relative}}
 .card-footer{{font-size:11.5px;color:#555;margin-top:8px;text-align:center;min-height:18px}}
+/* gap rows */
+.gap-rows{{margin-top:7px;display:flex;flex-direction:column;gap:3px;align-items:center}}
+.gap-row{{font-size:11px;color:#666;display:flex;align-items:center;gap:6px;white-space:nowrap}}
+.gap-row .gap-lbl{{color:#999;min-width:38px;text-align:right}}
+.gap-row .gap-vals{{color:#444}}
+.gap-row .gap-val{{font-weight:700}}
 /* keywords */
 .kw-details{{margin-top:8px;border-top:1px solid #eee;padding-top:7px}}
 .kw-details summary{{font-size:11px;color:#999;cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:4px}}
@@ -269,34 +278,8 @@ hr.divider{{border:none;border-top:1px solid #ddd;margin:32px 0 0}}
   </div>
 </header>
 
-<!-- ── 일반 가전 ─────────────────────────────────────────────── -->
-<section>
-  <div class="section-header">
-    <span class="section-title">일반 가전 — 삼성 vs LG</span>
-    <div class="section-controls">
-      <div class="filter-group" id="trend-filter">
-        <button class="filter-btn active" onclick="filterSection('trend',13,this)">최근 1년</button>
-        <button class="filter-btn"        onclick="filterSection('trend',6,this)">최근 6개월</button>
-        <button class="filter-btn"        onclick="filterSection('trend',3,this)">최근 3개월</button>
-      </div>
-      <button class="excel-btn" onclick="downloadExcel('trend')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="15" y2="11"/></svg>
-        엑셀 다운로드
-      </button>
-    </div>
-  </div>
-  <div class="summary-wrap">
-    <h3>카테고리별 평균 점수</h3>
-    <div class="summary-bar-wrap"><canvas id="trend_bar"></canvas></div>
-  </div>
-  <div class="grid" id="trend-grid">{cards_trend}
-  </div>
-</section>
-
-<hr class="divider">
-
 <!-- ── 구독/렌탈 ──────────────────────────────────────────────── -->
-<section style="margin-top:28px">
+<section>
   <div class="section-header">
     <span class="section-title">구독 / 렌탈 — 삼성 vs LG vs 코웨이</span>
     <div class="section-controls">
@@ -316,6 +299,32 @@ hr.divider{{border:none;border-top:1px solid #ddd;margin:32px 0 0}}
     <div class="summary-bar-wrap"><canvas id="subscribe_bar"></canvas></div>
   </div>
   <div class="grid" id="subscribe-grid">{cards_subscribe}
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── 일반 가전 ─────────────────────────────────────────────── -->
+<section style="margin-top:28px">
+  <div class="section-header">
+    <span class="section-title">일반 가전 — 삼성 vs LG</span>
+    <div class="section-controls">
+      <div class="filter-group" id="trend-filter">
+        <button class="filter-btn active" onclick="filterSection('trend',13,this)">최근 1년</button>
+        <button class="filter-btn"        onclick="filterSection('trend',6,this)">최근 6개월</button>
+        <button class="filter-btn"        onclick="filterSection('trend',3,this)">최근 3개월</button>
+      </div>
+      <button class="excel-btn" onclick="downloadExcel('trend')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="15" y2="11"/></svg>
+        엑셀 다운로드
+      </button>
+    </div>
+  </div>
+  <div class="summary-wrap">
+    <h3>카테고리별 평균 점수</h3>
+    <div class="summary-bar-wrap"><canvas id="trend_bar"></canvas></div>
+  </div>
+  <div class="grid" id="trend-grid">{cards_trend}
   </div>
 </section>
 
@@ -349,7 +358,38 @@ function slicedData(sectionData, months) {{
 }}
 
 // ── footer 텍스트 업데이트 ────────────────────────────
-function updateFooter(cid, cat, seriesSlice, brandsPerCat) {{
+function gapHtml(labels, seriesSlice, cat) {{
+    const s = seriesSlice[cat]['삼성'];
+    const l = seriesSlice[cat]['LG'];
+    if (!s || !l) return '';
+    const n = s.length;
+    function rowHtml(label, si, li, lbl) {{
+        const sv = si, lv = li;
+        const gap = lv !== 0 ? (sv - lv) / lv * 100 : 0;
+        const sign = gap >= 0 ? '+' : '';
+        const gapColor = gap >= 0 ? '#1428A0' : '#A50034';
+        const leader = gap >= 0 ? '삼성↑' : 'LG↑';
+        return `<div class="gap-row">
+            <span class="gap-lbl">${{lbl}}</span>
+            <span class="gap-vals">
+                <span style="color:#1428A0">삼성 ${{sv.toFixed(1)}}</span> vs
+                <span style="color:#A50034">LG ${{lv.toFixed(1)}}</span>
+                &nbsp;갭 <span class="gap-val" style="color:${{gapColor}}">${{sign}}${{gap.toFixed(1)}}%</span>
+                <span style="color:${{gapColor}};font-size:10px">(${{leader}})</span>
+            </span>
+        </div>`;
+    }}
+    const startLbl = labels[0];
+    const endLbl   = labels[n-1];
+    let html = '<div class="gap-rows">';
+    // 최신월(마지막 인덱스) 먼저, 시작월 아래
+    html += rowHtml(labels, s[n-1], l[n-1], endLbl);
+    if (n > 1) html += rowHtml(labels, s[0], l[0], startLbl);
+    html += '</div>';
+    return html;
+}}
+
+function updateFooter(cid, cat, seriesSlice, brandsPerCat, labels) {{
     const brands = brandsPerCat[cat];
     const avgs = {{}};
     brands.forEach(b => {{
@@ -360,8 +400,9 @@ function updateFooter(cid, cat, seriesSlice, brandsPerCat) {{
     const COLORS = {{"삼성":"#1428A0","LG":"#A50034","코웨이":"#00A651"}};
     const parts = brands.map(b=>`<span style="color:${{COLORS[b]||'#333'}}">${{b}} ${{avgs[b].toFixed(1)}}</span>`);
     const wc = COLORS[winner]||'#333';
-    document.getElementById(cid+'_footer').innerHTML =
-        parts.join('  |  ') + `&nbsp;→&nbsp;<strong style="color:${{wc}}">${{winner}} 우세</strong>`;
+    const avgHtml = parts.join('  |  ') + `&nbsp;→&nbsp;<strong style="color:${{wc}}">${{winner}} 우세</strong>`;
+    const gap = (brands.includes('삼성') && brands.includes('LG')) ? gapHtml(labels, seriesSlice, cat) : '';
+    document.getElementById(cid+'_footer').innerHTML = avgHtml + gap;
 }}
 
 // ── 바차트 업데이트 ──────────────────────────────────
@@ -423,7 +464,7 @@ function buildSection(sid, sectionData, months) {{
                 }}
             }}
         }});
-        updateFooter(cid, cat, series, sectionData.brandsPerCat);
+        updateFooter(cid, cat, series, sectionData.brandsPerCat, labels);
     }});
 
     // 바 차트
@@ -469,7 +510,7 @@ function filterSection(sid, months, btn) {{
             chart.data.datasets[di].data = series[cat][b];
         }});
         chart.update();
-        updateFooter(cid, cat, series, sectionData.brandsPerCat);
+        updateFooter(cid, cat, series, sectionData.brandsPerCat, labels);
     }});
     updateBarChart(sid, sectionData, {{ series }});
 }}
