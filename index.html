@@ -5,108 +5,64 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>네이버 월별 검색량 비교 20260329</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-    font-family: -apple-system, 'Malgun Gothic', sans-serif;
-    background: #f2f4f8;
-    color: #222;
-    padding: 0 0 60px;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'Malgun Gothic',sans-serif;background:#f2f4f8;color:#222;padding-bottom:60px}
+/* header */
+header{background:linear-gradient(135deg,#0f1e6e 0%,#1428A0 60%,#3a5bd6 100%);color:#fff;padding:32px 40px 26px}
+header h1{font-size:22px;font-weight:700;letter-spacing:-.5px}
+header p{font-size:12px;opacity:.8;margin-top:5px}
+.legend-pills{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.pill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:12px}
+.pill-dot{width:9px;height:9px;border-radius:50%}
+/* section */
+section{max-width:1400px;margin:28px auto 0;padding:0 20px}
+.section-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.section-title{font-size:16px;font-weight:700;color:#1428A0;border-left:4px solid #1428A0;padding-left:11px}
+.section-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* filter buttons */
+.filter-group{display:flex;gap:4px}
+.filter-btn{
+    font-size:12px;padding:5px 13px;border-radius:20px;border:1.5px solid #1428A0;
+    background:#fff;color:#1428A0;cursor:pointer;font-weight:600;transition:all .15s
 }
-header {
-    background: linear-gradient(135deg, #0f1e6e 0%, #1428A0 60%, #3a5bd6 100%);
-    color: #fff;
-    padding: 36px 40px 28px;
+.filter-btn:hover{background:#eef1fb}
+.filter-btn.active{background:#1428A0;color:#fff}
+/* excel button */
+.excel-btn{
+    font-size:12px;padding:5px 14px;border-radius:20px;border:none;
+    background:#217346;color:#fff;cursor:pointer;font-weight:600;
+    display:flex;align-items:center;gap:5px;transition:opacity .15s
 }
-header h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
-header p  { font-size: 13px; opacity: 0.8; margin-top: 6px; }
-.legend-pills { display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
-.pill {
-    display: flex; align-items: center; gap: 6px;
-    background: rgba(255,255,255,0.15); border-radius: 20px;
-    padding: 4px 12px; font-size: 13px;
-}
-.pill-dot { width: 10px; height: 10px; border-radius: 50%; }
-section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
-.section-title {
-    font-size: 17px; font-weight: 700; color: #1428A0;
-    border-left: 4px solid #1428A0; padding-left: 12px;
-    margin-bottom: 18px;
-}
-.summary-wrap {
-    background: #fff; border-radius: 14px;
-    padding: 20px 24px; margin-bottom: 28px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-}
-.summary-wrap h3 { font-size: 14px; color: #555; margin-bottom: 14px; }
-.summary-bar-wrap { height: 200px; }
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
-    gap: 16px;
-}
-.card {
-    background: #fff;
-    border-radius: 14px;
-    padding: 20px 20px 14px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-    transition: box-shadow 0.2s;
-}
-.card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
-.card-title {
-    font-size: 15px; font-weight: 700; color: #222;
-    margin-bottom: 12px; letter-spacing: -0.3px;
-}
-.chart-wrap { height: 180px; position: relative; }
-.card-footer {
-    font-size: 12px; color: #555;
-    margin-top: 10px; text-align: center;
-    line-height: 1.6;
-}
-
-/* 키워드 테이블 */
-.kw-details {
-    margin-top: 10px;
-    border-top: 1px solid #eee;
-    padding-top: 8px;
-}
-.kw-details summary {
-    font-size: 11px; color: #888; cursor: pointer;
-    user-select: none; list-style: none;
-    display: flex; align-items: center; gap: 4px;
-}
-.kw-details summary::before {
-    content: '▶';
-    font-size: 9px;
-    transition: transform 0.2s;
-    display: inline-block;
-}
-.kw-details[open] summary::before { transform: rotate(90deg); }
-.kw-details summary:hover { color: #444; }
-.kw-table {
-    width: 100%; border-collapse: collapse;
-    margin-top: 8px; font-size: 11px;
-}
-.kw-table tr { vertical-align: top; }
-.kw-table td { padding: 3px 4px; }
-.kw-brand {
-    font-weight: 700; white-space: nowrap;
-    padding-right: 8px !important; width: 44px;
-}
-.kw-pill {
-    display: inline-block;
-    border: 1px solid;
-    border-radius: 10px;
-    padding: 1px 7px;
-    margin: 2px 2px;
-    font-size: 10.5px;
-    background: #fafafa;
-}
-.divider { border: none; border-top: 1px solid #e0e0e0; margin: 36px 0 0; }
+.excel-btn:hover{opacity:.85}
+.excel-btn svg{width:13px;height:13px}
+/* summary bar */
+.summary-wrap{background:#fff;border-radius:14px;padding:18px 22px;margin-bottom:22px;box-shadow:0 2px 10px rgba(0,0,0,.07)}
+.summary-wrap h3{font-size:13px;color:#666;margin-bottom:12px}
+.summary-bar-wrap{height:190px}
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:14px}
+.card{background:#fff;border-radius:14px;padding:18px 18px 12px;box-shadow:0 2px 10px rgba(0,0,0,.07);transition:box-shadow .2s}
+.card:hover{box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.card-title{font-size:14px;font-weight:700;color:#222;margin-bottom:10px}
+.chart-wrap{height:175px;position:relative}
+.card-footer{font-size:11.5px;color:#555;margin-top:8px;text-align:center;min-height:18px}
+/* keywords */
+.kw-details{margin-top:8px;border-top:1px solid #eee;padding-top:7px}
+.kw-details summary{font-size:11px;color:#999;cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:4px}
+.kw-details summary::before{content:'▶';font-size:8px;transition:transform .2s;display:inline-block}
+.kw-details[open] summary::before{transform:rotate(90deg)}
+.kw-details summary:hover{color:#555}
+.kw-table{width:100%;border-collapse:collapse;margin-top:6px;font-size:11px}
+.kw-table tr{vertical-align:top}
+.kw-table td{padding:2px 4px}
+.kw-brand{font-weight:700;white-space:nowrap;padding-right:8px!important;width:44px}
+.kw-pill{display:inline-block;border:1px solid;border-radius:10px;padding:1px 7px;margin:2px 2px;font-size:10px;background:#fafafa}
+hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
 </style>
 </head>
 <body>
-
 <header>
   <h1>📊 네이버 월별 검색량 비교 차트</h1>
   <p>기간: 25.03 ~ 26.03 &nbsp;|&nbsp; 단위: 월간 상대지수 &nbsp;|&nbsp; 생성일: 20260329</p>
@@ -117,17 +73,31 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
   </div>
 </header>
 
+<!-- ── 일반 가전 ─────────────────────────────────────────────── -->
 <section>
-  <p class="section-title">일반 가전 — 삼성 vs LG</p>
-  <div class="summary-wrap">
-    <h3>카테고리별 평균 점수 (1년 평균)</h3>
-    <div class="summary-bar-wrap"><canvas id="bar_trend"></canvas></div>
+  <div class="section-header">
+    <span class="section-title">일반 가전 — 삼성 vs LG</span>
+    <div class="section-controls">
+      <div class="filter-group" id="trend-filter">
+        <button class="filter-btn active" onclick="filterSection('trend',13,this)">최근 1년</button>
+        <button class="filter-btn"        onclick="filterSection('trend',6,this)">최근 6개월</button>
+        <button class="filter-btn"        onclick="filterSection('trend',3,this)">최근 3개월</button>
+      </div>
+      <button class="excel-btn" onclick="downloadExcel('trend')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="15" y2="11"/></svg>
+        엑셀 다운로드
+      </button>
+    </div>
   </div>
-  <div class="grid">
+  <div class="summary-wrap">
+    <h3>카테고리별 평균 점수</h3>
+    <div class="summary-bar-wrap"><canvas id="trend_bar"></canvas></div>
+  </div>
+  <div class="grid" id="trend-grid">
         <div class="card">
             <div class="card-title">냉장고</div>
-            <div class="chart-wrap"><canvas id="가전_0"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 73.1</span>  |  <span style='color:#A50034'>LG 64.5</span> &nbsp;→&nbsp; <strong style="color:#1428A0">삼성 우세</strong></div>
+            <div class="chart-wrap"><canvas id="trend_0"></canvas></div>
+            <div class="card-footer" id="trend_0_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -136,8 +106,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">세탁기</div>
-            <div class="chart-wrap"><canvas id="가전_1"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 78.7</span>  |  <span style='color:#A50034'>LG 77.9</span> &nbsp;→&nbsp; <strong style="color:#1428A0">삼성 우세</strong></div>
+            <div class="chart-wrap"><canvas id="trend_1"></canvas></div>
+            <div class="card-footer" id="trend_1_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -146,8 +116,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">에어컨</div>
-            <div class="chart-wrap"><canvas id="가전_2"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 32.3</span>  |  <span style='color:#A50034'>LG 27.9</span> &nbsp;→&nbsp; <strong style="color:#1428A0">삼성 우세</strong></div>
+            <div class="chart-wrap"><canvas id="trend_2"></canvas></div>
+            <div class="card-footer" id="trend_2_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -156,8 +126,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">TV</div>
-            <div class="chart-wrap"><canvas id="가전_3"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 63.7</span>  |  <span style='color:#A50034'>LG 83.1</span> &nbsp;→&nbsp; <strong style="color:#A50034">LG 우세</strong></div>
+            <div class="chart-wrap"><canvas id="trend_3"></canvas></div>
+            <div class="card-footer" id="trend_3_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -166,8 +136,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">건조기</div>
-            <div class="chart-wrap"><canvas id="가전_4"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 76.8</span>  |  <span style='color:#A50034'>LG 77.4</span> &nbsp;→&nbsp; <strong style="color:#A50034">LG 우세</strong></div>
+            <div class="chart-wrap"><canvas id="trend_4"></canvas></div>
+            <div class="card-footer" id="trend_4_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -176,8 +146,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">정수기</div>
-            <div class="chart-wrap"><canvas id="가전_5"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 29.2</span>  |  <span style='color:#A50034'>LG 76.7</span> &nbsp;→&nbsp; <strong style="color:#A50034">LG 우세</strong></div>
+            <div class="chart-wrap"><canvas id="trend_5"></canvas></div>
+            <div class="card-footer" id="trend_5_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -186,8 +156,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">공기청정기</div>
-            <div class="chart-wrap"><canvas id="가전_6"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 39.3</span>  |  <span style='color:#A50034'>LG 60.0</span> &nbsp;→&nbsp; <strong style="color:#A50034">LG 우세</strong></div>
+            <div class="chart-wrap"><canvas id="trend_6"></canvas></div>
+            <div class="card-footer" id="trend_6_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -196,8 +166,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">식기세척기</div>
-            <div class="chart-wrap"><canvas id="가전_7"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 75.0</span>  |  <span style='color:#A50034'>LG 72.3</span> &nbsp;→&nbsp; <strong style="color:#1428A0">삼성 우세</strong></div>
+            <div class="chart-wrap"><canvas id="trend_7"></canvas></div>
+            <div class="card-footer" id="trend_7_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -206,8 +176,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">청소기</div>
-            <div class="chart-wrap"><canvas id="가전_8"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 77.9</span>  |  <span style='color:#A50034'>LG 84.1</span> &nbsp;→&nbsp; <strong style="color:#A50034">LG 우세</strong></div>
+            <div class="chart-wrap"><canvas id="trend_8"></canvas></div>
+            <div class="card-footer" id="trend_8_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -216,8 +186,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">로봇청소기</div>
-            <div class="chart-wrap"><canvas id="가전_9"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 61.7</span>  |  <span style='color:#A50034'>LG 30.7</span> &nbsp;→&nbsp; <strong style="color:#1428A0">삼성 우세</strong></div>
+            <div class="chart-wrap"><canvas id="trend_9"></canvas></div>
+            <div class="card-footer" id="trend_9_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -226,8 +196,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">의류관리기</div>
-            <div class="chart-wrap"><canvas id="가전_10"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 22.2</span>  |  <span style='color:#A50034'>LG 80.1</span> &nbsp;→&nbsp; <strong style="color:#A50034">LG 우세</strong></div>
+            <div class="chart-wrap"><canvas id="trend_10"></canvas></div>
+            <div class="card-footer" id="trend_10_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -239,17 +209,31 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
 
 <hr class="divider">
 
-<section style="margin-top:32px">
-  <p class="section-title">구독 / 렌탈 — 삼성 vs LG vs 코웨이</p>
-  <div class="summary-wrap">
-    <h3>카테고리별 평균 점수 (1년 평균)</h3>
-    <div class="summary-bar-wrap"><canvas id="bar_subscribe"></canvas></div>
+<!-- ── 구독/렌탈 ──────────────────────────────────────────────── -->
+<section style="margin-top:28px">
+  <div class="section-header">
+    <span class="section-title">구독 / 렌탈 — 삼성 vs LG vs 코웨이</span>
+    <div class="section-controls">
+      <div class="filter-group" id="subscribe-filter">
+        <button class="filter-btn active" onclick="filterSection('subscribe',13,this)">최근 1년</button>
+        <button class="filter-btn"        onclick="filterSection('subscribe',6,this)">최근 6개월</button>
+        <button class="filter-btn"        onclick="filterSection('subscribe',3,this)">최근 3개월</button>
+      </div>
+      <button class="excel-btn" onclick="downloadExcel('subscribe')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="11" x2="15" y2="11"/></svg>
+        엑셀 다운로드
+      </button>
+    </div>
   </div>
-  <div class="grid">
+  <div class="summary-wrap">
+    <h3>카테고리별 평균 점수</h3>
+    <div class="summary-bar-wrap"><canvas id="subscribe_bar"></canvas></div>
+  </div>
+  <div class="grid" id="subscribe-grid">
         <div class="card">
             <div class="card-title">구독브랜드</div>
-            <div class="chart-wrap"><canvas id="구독_0"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 1.9</span>  |  <span style='color:#A50034'>LG 7.4</span>  |  <span style='color:#00A651'>코웨이 77.8</span> &nbsp;→&nbsp; <strong style="color:#00A651">코웨이 우세</strong></div>
+            <div class="chart-wrap"><canvas id="subscribe_0"></canvas></div>
+            <div class="card-footer" id="subscribe_0_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -258,8 +242,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">정수기구독</div>
-            <div class="chart-wrap"><canvas id="구독_1"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 1.4</span>  |  <span style='color:#A50034'>LG 16.9</span>  |  <span style='color:#00A651'>코웨이 83.1</span> &nbsp;→&nbsp; <strong style="color:#00A651">코웨이 우세</strong></div>
+            <div class="chart-wrap"><canvas id="subscribe_1"></canvas></div>
+            <div class="card-footer" id="subscribe_1_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -268,8 +252,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">공기청정기구독</div>
-            <div class="chart-wrap"><canvas id="구독_2"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 1.2</span>  |  <span style='color:#A50034'>LG 10.7</span>  |  <span style='color:#00A651'>코웨이 57.6</span> &nbsp;→&nbsp; <strong style="color:#00A651">코웨이 우세</strong></div>
+            <div class="chart-wrap"><canvas id="subscribe_2"></canvas></div>
+            <div class="card-footer" id="subscribe_2_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -278,8 +262,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">에어컨구독</div>
-            <div class="chart-wrap"><canvas id="구독_3"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 26.8</span>  |  <span style='color:#A50034'>LG 26.3</span> &nbsp;→&nbsp; <strong style="color:#1428A0">삼성 우세</strong></div>
+            <div class="chart-wrap"><canvas id="subscribe_3"></canvas></div>
+            <div class="card-footer" id="subscribe_3_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -288,8 +272,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">건조기구독</div>
-            <div class="chart-wrap"><canvas id="구독_4"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 15.4</span>  |  <span style='color:#A50034'>LG 52.1</span> &nbsp;→&nbsp; <strong style="color:#A50034">LG 우세</strong></div>
+            <div class="chart-wrap"><canvas id="subscribe_4"></canvas></div>
+            <div class="card-footer" id="subscribe_4_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -298,8 +282,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">세탁기구독</div>
-            <div class="chart-wrap"><canvas id="구독_5"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 14.3</span>  |  <span style='color:#A50034'>LG 55.3</span> &nbsp;→&nbsp; <strong style="color:#A50034">LG 우세</strong></div>
+            <div class="chart-wrap"><canvas id="subscribe_5"></canvas></div>
+            <div class="card-footer" id="subscribe_5_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -308,8 +292,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">식기세척기구독</div>
-            <div class="chart-wrap"><canvas id="구독_6"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 3.2</span>  |  <span style='color:#A50034'>LG 56.2</span> &nbsp;→&nbsp; <strong style="color:#A50034">LG 우세</strong></div>
+            <div class="chart-wrap"><canvas id="subscribe_6"></canvas></div>
+            <div class="card-footer" id="subscribe_6_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -318,8 +302,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">의류관리기구독</div>
-            <div class="chart-wrap"><canvas id="구독_7"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 2.3</span>  |  <span style='color:#A50034'>LG 58.4</span> &nbsp;→&nbsp; <strong style="color:#A50034">LG 우세</strong></div>
+            <div class="chart-wrap"><canvas id="subscribe_7"></canvas></div>
+            <div class="card-footer" id="subscribe_7_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -328,8 +312,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">청소기구독</div>
-            <div class="chart-wrap"><canvas id="구독_8"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 8.0</span>  |  <span style='color:#A50034'>LG 30.3</span> &nbsp;→&nbsp; <strong style="color:#A50034">LG 우세</strong></div>
+            <div class="chart-wrap"><canvas id="subscribe_8"></canvas></div>
+            <div class="card-footer" id="subscribe_8_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -338,8 +322,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">로봇청소기구독</div>
-            <div class="chart-wrap"><canvas id="구독_9"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 28.7</span>  |  <span style='color:#A50034'>LG 34.1</span> &nbsp;→&nbsp; <strong style="color:#A50034">LG 우세</strong></div>
+            <div class="chart-wrap"><canvas id="subscribe_9"></canvas></div>
+            <div class="card-footer" id="subscribe_9_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -348,8 +332,8 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
         </div>
         <div class="card">
             <div class="card-title">가전구독일반</div>
-            <div class="chart-wrap"><canvas id="구독_10"></canvas></div>
-            <div class="card-footer"><span style='color:#1428A0'>삼성 24.8</span>  |  <span style='color:#A50034'>LG 82.6</span>  |  <span style='color:#00A651'>코웨이 1.5</span> &nbsp;→&nbsp; <strong style="color:#A50034">LG 우세</strong></div>
+            <div class="chart-wrap"><canvas id="subscribe_10"></canvas></div>
+            <div class="card-footer" id="subscribe_10_footer"></div>
             
     <details class="kw-details">
       <summary>검색어 보기</summary>
@@ -361,997 +345,208 @@ section { max-width: 1400px; margin: 32px auto 0; padding: 0 20px; }
 
 <script>
 
-        new Chart(document.getElementById('가전_0'), {
+    const trendData = {
+        periods: ["2025-03-01", "2025-04-01", "2025-05-01", "2025-06-01", "2025-07-01", "2025-08-01", "2025-09-01", "2025-10-01", "2025-11-01", "2025-12-01", "2026-01-01", "2026-02-01", "2026-03-01"],
+        labels:  ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
+        cats:    ["\ub0c9\uc7a5\uace0", "\uc138\ud0c1\uae30", "\uc5d0\uc5b4\ucee8", "TV", "\uac74\uc870\uae30", "\uc815\uc218\uae30", "\uacf5\uae30\uccad\uc815\uae30", "\uc2dd\uae30\uc138\ucc99\uae30", "\uccad\uc18c\uae30", "\ub85c\ubd07\uccad\uc18c\uae30", "\uc758\ub958\uad00\ub9ac\uae30"],
+        series:  {"냉장고": {"삼성": [81.28, 73.61, 79.35, 83.93, 100.0, 90.45, 72.93, 71.96, 64.95, 58.24, 62.39, 56.92, 53.66], "LG": [73.51, 64.82, 69.09, 81.71, 91.57, 83.46, 66.88, 59.3, 55.54, 49.52, 52.04, 46.56, 43.94]}, "세탁기": {"삼성": [82.27, 75.97, 83.14, 84.95, 95.76, 93.13, 77.85, 83.39, 71.31, 66.23, 79.9, 67.24, 62.06], "LG": [86.78, 77.26, 83.64, 100.0, 92.69, 91.17, 76.56, 76.83, 72.46, 65.01, 73.3, 61.57, 55.7]}, "에어컨": {"삼성": [37.67, 40.2, 46.79, 71.04, 100.0, 44.49, 16.61, 9.15, 7.89, 7.82, 10.2, 10.29, 17.43], "LG": [29.22, 33.2, 41.22, 63.13, 86.43, 38.4, 14.23, 7.86, 7.33, 10.88, 8.19, 8.86, 13.92]}, "TV": {"삼성": [73.18, 59.19, 66.92, 75.25, 69.43, 73.74, 65.36, 63.96, 58.52, 56.17, 62.66, 55.31, 48.0], "LG": [94.88, 79.71, 80.4, 76.3, 90.23, 95.01, 81.79, 78.95, 69.44, 84.61, 100.0, 81.28, 67.92]}, "건조기": {"삼성": [86.3, 78.29, 88.99, 84.59, 77.33, 68.82, 66.46, 100.0, 77.24, 72.46, 79.9, 64.83, 53.43], "LG": [92.29, 80.96, 95.91, 88.24, 81.46, 73.42, 66.75, 93.62, 76.85, 69.01, 71.65, 59.81, 56.73]}, "정수기": {"삼성": [30.36, 25.6, 27.77, 28.61, 29.86, 37.97, 35.4, 29.66, 27.71, 25.04, 30.29, 25.04, 25.97], "LG": [94.75, 100.0, 77.83, 79.57, 83.92, 87.11, 79.84, 74.39, 64.3, 65.48, 67.73, 59.0, 63.06]}, "공기청정기": {"삼성": [63.51, 45.25, 38.89, 31.71, 30.65, 30.53, 29.08, 34.71, 39.04, 33.37, 41.2, 45.71, 47.62], "LG": [100.0, 71.94, 62.89, 56.44, 49.69, 48.6, 45.01, 48.98, 57.28, 52.66, 59.18, 64.53, 62.85]}, "식기세척기": {"삼성": [100.0, 79.52, 77.55, 70.06, 79.49, 82.03, 69.49, 70.08, 63.3, 60.4, 84.66, 74.78, 64.25], "LG": [92.78, 76.84, 71.62, 67.56, 87.47, 80.87, 67.23, 66.6, 65.23, 60.23, 75.55, 65.83, 62.7]}, "청소기": {"삼성": [82.4, 72.4, 71.43, 70.08, 100.0, 89.13, 76.39, 81.1, 75.39, 73.68, 85.83, 73.26, 61.64], "LG": [99.74, 84.6, 89.28, 82.95, 94.15, 96.07, 81.75, 79.67, 82.6, 80.82, 84.23, 74.06, 63.55]}, "로봇청소기": {"삼성": [60.35, 48.37, 52.08, 50.61, 57.76, 57.57, 62.81, 56.82, 55.28, 51.74, 67.24, 100.0, 81.12], "LG": [31.9, 26.35, 28.77, 28.19, 32.36, 34.92, 38.22, 33.28, 29.98, 26.48, 31.19, 31.35, 26.53]}, "의류관리기": {"삼성": [28.0, 21.03, 20.8, 16.69, 16.85, 16.79, 16.28, 21.31, 24.61, 25.82, 27.58, 24.13, 29.29], "LG": [99.88, 95.23, 89.72, 69.91, 59.82, 58.45, 57.39, 77.91, 86.36, 91.64, 100.0, 80.11, 75.15]}},
+        brandsPerCat: {"냉장고": ["삼성", "LG"], "세탁기": ["삼성", "LG"], "에어컨": ["삼성", "LG"], "TV": ["삼성", "LG"], "건조기": ["삼성", "LG"], "정수기": ["삼성", "LG"], "공기청정기": ["삼성", "LG"], "식기세척기": ["삼성", "LG"], "청소기": ["삼성", "LG"], "로봇청소기": ["삼성", "LG"], "의류관리기": ["삼성", "LG"]},
+        colors:  {"삼성": "#1428A0", "LG": "#A50034", "코웨이": "#00A651"}
+    };
+
+    const subscribeData = {
+        periods: ["2025-03-01", "2025-04-01", "2025-05-01", "2025-06-01", "2025-07-01", "2025-08-01", "2025-09-01", "2025-10-01", "2025-11-01", "2025-12-01", "2026-01-01", "2026-02-01", "2026-03-01"],
+        labels:  ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
+        cats:    ["\uad6c\ub3c5\ube0c\ub79c\ub4dc", "\uc815\uc218\uae30\uad6c\ub3c5", "\uacf5\uae30\uccad\uc815\uae30\uad6c\ub3c5", "\uc5d0\uc5b4\ucee8\uad6c\ub3c5", "\uac74\uc870\uae30\uad6c\ub3c5", "\uc138\ud0c1\uae30\uad6c\ub3c5", "\uc2dd\uae30\uc138\ucc99\uae30\uad6c\ub3c5", "\uc758\ub958\uad00\ub9ac\uae30\uad6c\ub3c5", "\uccad\uc18c\uae30\uad6c\ub3c5", "\ub85c\ubd07\uccad\uc18c\uae30\uad6c\ub3c5", "\uac00\uc804\uad6c\ub3c5\uc77c\ubc18"],
+        series:  {"구독브랜드": {"삼성": [2.45, 1.95, 1.91, 1.84, 1.98, 1.5, 1.41, 1.47, 1.63, 1.84, 2.71, 1.87, 2.01], "LG": [10.65, 9.1, 7.02, 7.0, 8.08, 6.79, 6.53, 7.5, 6.81, 7.5, 7.39, 6.1, 6.21], "코웨이": [83.69, 81.37, 71.3, 68.2, 77.99, 78.89, 78.38, 69.87, 68.33, 69.9, 83.36, 80.51, 100.0]}, "정수기구독": {"삼성": [0.83, 0.74, 0.79, 0.8, 0.73, 1.37, 4.25, 2.15, 1.34, 1.33, 1.81, 1.18, 1.37], "LG": [18.93, 29.79, 15.87, 14.38, 16.39, 18.35, 20.24, 19.11, 13.7, 15.22, 12.62, 11.43, 13.98], "코웨이": [81.07, 74.08, 81.47, 86.97, 93.33, 100.0, 87.1, 73.8, 67.12, 72.23, 85.77, 79.85, 97.71]}, "공기청정기구독": {"삼성": [2.31, 1.49, 1.13, 0.83, 0.93, 0.9, 1.01, 1.01, 0.99, 0.81, 1.06, 1.42, 1.34], "LG": [16.6, 11.69, 9.41, 7.56, 6.96, 7.19, 14.75, 8.36, 6.97, 20.03, 8.87, 10.27, 10.47], "코웨이": [100.0, 75.7, 53.55, 40.25, 38.16, 47.12, 46.97, 44.77, 47.93, 53.88, 61.76, 63.32, 75.93]}, "에어컨구독": {"삼성": [31.46, 27.01, 24.74, 35.63, 46.28, 41.39, 100.0, 27.05, 1.45, 0.88, 1.53, 2.95, 7.78], "LG": [18.42, 31.32, 44.39, 48.96, 54.8, 31.14, 67.4, 18.15, 2.32, 4.41, 2.43, 5.78, 12.39]}, "건조기구독": {"삼성": [13.25, 10.24, 9.28, 7.39, 4.59, 3.16, 4.33, 7.03, 4.03, 72.63, 55.3, 4.79, 4.64], "LG": [100.0, 45.21, 46.33, 39.35, 35.88, 89.86, 83.28, 44.55, 27.06, 48.98, 42.1, 35.37, 38.84]}, "세탁기구독": {"삼성": [60.4, 11.11, 10.26, 10.81, 11.87, 12.79, 9.47, 11.18, 10.12, 7.56, 7.69, 9.68, 12.38], "LG": [40.46, 33.0, 30.16, 29.65, 30.75, 30.54, 50.75, 69.15, 71.75, 100.0, 88.34, 77.63, 66.35]}, "식기세척기구독": {"삼성": [6.47, 7.45, 0.98, 1.06, 3.44, 4.42, 6.47, 2.38, 0.98, 2.13, 1.47, 0.9, 4.01], "LG": [70.43, 48.81, 42.75, 39.15, 53.15, 62.0, 49.71, 47.17, 43.98, 40.62, 40.05, 100.0, 92.87]}, "의류관리기구독": {"삼성": [4.09, 2.88, 1.51, 0.92, 0.87, 0.93, 1.28, 2.14, 3.39, 4.0, 2.83, 2.29, 2.38], "LG": [71.08, 64.4, 48.45, 35.85, 36.14, 28.77, 35.52, 49.73, 58.48, 95.72, 73.08, 100.0, 61.82]}, "청소기구독": {"삼성": [4.14, 10.53, 10.15, 14.29, 6.39, 4.14, 12.78, 8.65, 3.76, 6.02, 16.92, 4.51, 1.88], "LG": [34.59, 23.31, 16.17, 21.8, 100.0, 31.58, 14.29, 37.22, 25.19, 25.19, 53.76, 6.77, 3.76]}, "로봇청소기구독": {"삼성": [13.71, 7.48, 5.92, 12.77, 16.82, 23.68, 30.53, 13.71, 19.94, 41.74, 46.73, 66.36, 73.21], "LG": [30.22, 9.66, 9.66, 6.23, 21.18, 17.45, 15.89, 17.76, 41.43, 62.31, 63.55, 100.0, 47.35]}, "가전구독일반": {"삼성": [28.36, 21.59, 21.08, 21.13, 22.58, 26.58, 48.84, 24.25, 18.38, 17.99, 27.15, 20.13, 24.69], "LG": [82.73, 80.92, 84.22, 88.39, 90.51, 85.55, 100.0, 75.54, 63.09, 76.1, 95.52, 76.54, 75.11], "코웨이": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.52, 3.39, 3.88, 4.14, 3.78, 3.93]}},
+        brandsPerCat: {"구독브랜드": ["삼성", "LG", "코웨이"], "정수기구독": ["삼성", "LG", "코웨이"], "공기청정기구독": ["삼성", "LG", "코웨이"], "에어컨구독": ["삼성", "LG"], "건조기구독": ["삼성", "LG"], "세탁기구독": ["삼성", "LG"], "식기세척기구독": ["삼성", "LG"], "의류관리기구독": ["삼성", "LG"], "청소기구독": ["삼성", "LG"], "로봇청소기구독": ["삼성", "LG"], "가전구독일반": ["삼성", "LG", "코웨이"]},
+        colors:  {"삼성": "#1428A0", "LG": "#A50034", "코웨이": "#00A651"}
+    };
+
+// ── 차트 인스턴스 저장소 ─────────────────────────────
+const chartInstances = { trend: {}, subscribe: {} };
+const barInstances   = { trend: null, subscribe: null };
+
+// ── 유틸: 라벨 단축 ─────────────────────────────────
+function ml(p) {
+    const d = new Date(p);
+    return (d.getFullYear()%100).toString().padStart(2,'0') + '.' + (d.getMonth()+1).toString().padStart(2,'0');
+}
+
+// ── 슬라이스된 데이터 반환 ───────────────────────────
+function slicedData(sectionData, months) {
+    const n = Math.min(months, sectionData.periods.length);
+    const pSlice = sectionData.periods.slice(-n);
+    const lSlice = sectionData.labels.slice(-n);
+    const seriesSlice = {};
+    for (const cat of sectionData.cats) {
+        seriesSlice[cat] = {};
+        for (const brand of sectionData.brandsPerCat[cat]) {
+            seriesSlice[cat][brand] = sectionData.series[cat][brand].slice(-n);
+        }
+    }
+    return { periods: pSlice, labels: lSlice, series: seriesSlice };
+}
+
+// ── footer 텍스트 업데이트 ────────────────────────────
+function updateFooter(cid, cat, seriesSlice, brandsPerCat) {
+    const brands = brandsPerCat[cat];
+    const avgs = {};
+    brands.forEach(b => {
+        const vals = seriesSlice[cat][b];
+        avgs[b] = vals.reduce((a,v)=>a+v,0) / (vals.length||1);
+    });
+    const winner = brands.reduce((a,b)=>avgs[a]>=avgs[b]?a:b);
+    const COLORS = {"삼성":"#1428A0","LG":"#A50034","코웨이":"#00A651"};
+    const parts = brands.map(b=>`<span style="color:${COLORS[b]||'#333'}">${b} ${avgs[b].toFixed(1)}</span>`);
+    const wc = COLORS[winner]||'#333';
+    document.getElementById(cid+'_footer').innerHTML =
+        parts.join('  |  ') + `&nbsp;→&nbsp;<strong style="color:${wc}">${winner} 우세</strong>`;
+}
+
+// ── 바차트 업데이트 ──────────────────────────────────
+function updateBarChart(sid, sectionData, seriesSlice) {
+    const cats   = sectionData.cats;
+    const allBrands = [...new Set(cats.flatMap(c=>sectionData.brandsPerCat[c]))];
+    const COLORS = {"삼성":"#1428A0CC","LG":"#A50034CC","코웨이":"#00A651CC"};
+    const datasets = allBrands.map(b=>{
+        const vals = cats.map(cat=>{
+            const s = seriesSlice.series[cat][b];
+            return s ? parseFloat((s.reduce((a,v)=>a+v,0)/(s.length||1)).toFixed(1)) : 0;
+        });
+        return { label:b, data:vals, backgroundColor:COLORS[b]||'#88888888', borderRadius:4 };
+    });
+    const bar = barInstances[sid];
+    bar.data.labels   = cats;
+    bar.data.datasets = datasets;
+    bar.update();
+}
+
+// ── 섹션 초기 빌드 ────────────────────────────────────
+function buildSection(sid, sectionData, months) {
+    const { periods, labels, series } = slicedData(sectionData, months);
+    const cats = sectionData.cats;
+    const COLORS = {"삼성":"#1428A0","LG":"#A50034","코웨이":"#00A651"};
+
+    cats.forEach((cat, i) => {
+        const cid = sid+'_'+i;
+        const brands = sectionData.brandsPerCat[cat];
+        const datasets = brands.map(b=>{
+            const c = COLORS[b]||'#888';
+            return {
+                label: b,
+                data: series[cat][b],
+                borderColor: c,
+                backgroundColor: c+'18',
+                borderWidth: 2.5,
+                pointRadius: 3,
+                tension: 0.35,
+                fill: false
+            };
+        });
+        const ctx = document.getElementById(cid);
+        if (!ctx) return;
+        chartInstances[sid][cat] = new Chart(ctx, {
             type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [81.3, 73.6, 79.4, 83.9, 100.0, 90.4, 72.9, 72.0, 65.0, 58.2, 62.4, 56.9, 53.7],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [73.5, 64.8, 69.1, 81.7, 91.6, 83.5, 66.9, 59.3, 55.5, 49.5, 52.0, 46.6, 43.9],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
+            data: { labels, datasets },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
+                interaction: { mode:'index', intersect:false },
                 plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
+                    legend: { position:'top', labels:{ font:{size:11}, padding:10 } },
+                    tooltip: { callbacks: { label: ctx=>`  ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
                 },
                 scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
+                    x: { grid:{display:false}, ticks:{font:{size:10}} },
+                    y: { beginAtZero:true, grid:{color:'#f0f0f0'}, ticks:{font:{size:10}} }
                 }
             }
         });
+        updateFooter(cid, cat, series, sectionData.brandsPerCat);
+    });
 
-        new Chart(document.getElementById('가전_1'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [82.3, 76.0, 83.1, 85.0, 95.8, 93.1, 77.8, 83.4, 71.3, 66.2, 79.9, 67.2, 62.1],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [86.8, 77.3, 83.6, 100.0, 92.7, 91.2, 76.6, 76.8, 72.5, 65.0, 73.3, 61.6, 55.7],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
+    // 바 차트
+    const allBrands = [...new Set(cats.flatMap(c=>sectionData.brandsPerCat[c]))];
+    const COLORSCC  = {"삼성":"#1428A0CC","LG":"#A50034CC","코웨이":"#00A651CC"};
+    const barDatasets = allBrands.map(b=>{
+        const vals = cats.map(cat=>{
+            const s = series[cat][b];
+            return s ? parseFloat((s.reduce((a,v)=>a+v,0)/(s.length||1)).toFixed(1)) : 0;
         });
+        return { label:b, data:vals, backgroundColor:COLORSCC[b]||'#88888888', borderRadius:4 };
+    });
+    barInstances[sid] = new Chart(document.getElementById(sid+'_bar'), {
+        type: 'bar',
+        data: { labels: cats, datasets: barDatasets },
+        options: {
+            responsive:true, maintainAspectRatio:false,
+            plugins:{ legend:{ position:'top' } },
+            scales:{
+                y:{ beginAtZero:true, grid:{color:'#f0f0f0'} },
+                x:{ grid:{display:false} }
+            }
+        }
+    });
+}
 
-        new Chart(document.getElementById('가전_2'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [37.7, 40.2, 46.8, 71.0, 100.0, 44.5, 16.6, 9.2, 7.9, 7.8, 10.2, 10.3, 17.4],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [29.2, 33.2, 41.2, 63.1, 86.4, 38.4, 14.2, 7.9, 7.3, 10.9, 8.2, 8.9, 13.9],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
+// ── 타임라인 필터 ────────────────────────────────────
+function filterSection(sid, months, btn) {
+    // 버튼 active 표시
+    document.querySelectorAll('#'+sid+'-filter .filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
 
-        new Chart(document.getElementById('가전_3'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [73.2, 59.2, 66.9, 75.2, 69.4, 73.7, 65.4, 64.0, 58.5, 56.2, 62.7, 55.3, 48.0],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [94.9, 79.7, 80.4, 76.3, 90.2, 95.0, 81.8, 78.9, 69.4, 84.6, 100.0, 81.3, 67.9],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
+    const sectionData = sid==='trend' ? trendData : subscribeData;
+    const { periods, labels, series } = slicedData(sectionData, months);
 
-        new Chart(document.getElementById('가전_4'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [86.3, 78.3, 89.0, 84.6, 77.3, 68.8, 66.5, 100.0, 77.2, 72.5, 79.9, 64.8, 53.4],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [92.3, 81.0, 95.9, 88.2, 81.5, 73.4, 66.7, 93.6, 76.8, 69.0, 71.6, 59.8, 56.7],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
+    sectionData.cats.forEach((cat, i) => {
+        const cid = sid+'_'+i;
+        const chart = chartInstances[sid][cat];
+        if (!chart) return;
+        const brands = sectionData.brandsPerCat[cat];
+        chart.data.labels = labels;
+        brands.forEach((b, di) => {
+            chart.data.datasets[di].data = series[cat][b];
         });
+        chart.update();
+        updateFooter(cid, cat, series, sectionData.brandsPerCat);
+    });
+    updateBarChart(sid, sectionData, { series });
+}
 
-        new Chart(document.getElementById('가전_5'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [30.4, 25.6, 27.8, 28.6, 29.9, 38.0, 35.4, 29.7, 27.7, 25.0, 30.3, 25.0, 26.0],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [94.8, 100.0, 77.8, 79.6, 83.9, 87.1, 79.8, 74.4, 64.3, 65.5, 67.7, 59.0, 63.1],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
+// ── 엑셀 다운로드 ────────────────────────────────────
+function downloadExcel(sid) {
+    const sectionData = sid==='trend' ? trendData : subscribeData;
+    const wb = XLSX.utils.book_new();
+    const periods = sectionData.periods;
 
-        new Chart(document.getElementById('가전_6'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [63.5, 45.3, 38.9, 31.7, 30.6, 30.5, 29.1, 34.7, 39.0, 33.4, 41.2, 45.7, 47.6],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [100.0, 71.9, 62.9, 56.4, 49.7, 48.6, 45.0, 49.0, 57.3, 52.7, 59.2, 64.5, 62.8],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
+    // 전체 요약 시트
+    const summaryRows = [['카테고리','브랜드',...periods.map(ml)]];
+    sectionData.cats.forEach(cat=>{
+        sectionData.brandsPerCat[cat].forEach(b=>{
+            summaryRows.push([cat, b, ...sectionData.series[cat][b]]);
         });
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryRows), '전체');
 
-        new Chart(document.getElementById('가전_7'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [100.0, 79.5, 77.6, 70.1, 79.5, 82.0, 69.5, 70.1, 63.3, 60.4, 84.7, 74.8, 64.2],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [92.8, 76.8, 71.6, 67.6, 87.5, 80.9, 67.2, 66.6, 65.2, 60.2, 75.5, 65.8, 62.7],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
+    // 카테고리별 시트
+    sectionData.cats.forEach(cat=>{
+        const rows = [['월', ...sectionData.brandsPerCat[cat]]];
+        periods.forEach((p, pi)=>{
+            rows.push([ml(p), ...sectionData.brandsPerCat[cat].map(b=>sectionData.series[cat][b][pi])]);
         });
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), cat.slice(0,31));
+    });
 
-        new Chart(document.getElementById('가전_8'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [82.4, 72.4, 71.4, 70.1, 100.0, 89.1, 76.4, 81.1, 75.4, 73.7, 85.8, 73.3, 61.6],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [99.7, 84.6, 89.3, 83.0, 94.1, 96.1, 81.7, 79.7, 82.6, 80.8, 84.2, 74.1, 63.5],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
+    const filename = sid==='trend'
+        ? '일반가전_트렌드_20260329.xlsx'
+        : '구독렌탈_트렌드_20260329.xlsx';
+    XLSX.writeFile(wb, filename);
+}
 
-        new Chart(document.getElementById('가전_9'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [60.4, 48.4, 52.1, 50.6, 57.8, 57.6, 62.8, 56.8, 55.3, 51.7, 67.2, 100.0, 81.1],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [31.9, 26.3, 28.8, 28.2, 32.4, 34.9, 38.2, 33.3, 30.0, 26.5, 31.2, 31.3, 26.5],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('가전_10'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [28.0, 21.0, 20.8, 16.7, 16.8, 16.8, 16.3, 21.3, 24.6, 25.8, 27.6, 24.1, 29.3],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [99.9, 95.2, 89.7, 69.9, 59.8, 58.5, 57.4, 77.9, 86.4, 91.6, 100.0, 80.1, 75.2],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('구독_0'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [2.5, 2.0, 1.9, 1.8, 2.0, 1.5, 1.4, 1.5, 1.6, 1.8, 2.7, 1.9, 2.0],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [10.6, 9.1, 7.0, 7.0, 8.1, 6.8, 6.5, 7.5, 6.8, 7.5, 7.4, 6.1, 6.2],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: '코웨이',
-                data: [83.7, 81.4, 71.3, 68.2, 78.0, 78.9, 78.4, 69.9, 68.3, 69.9, 83.4, 80.5, 100.0],
-                borderColor: '#00A651',
-                backgroundColor: '#00A65118',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('구독_1'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [0.8, 0.7, 0.8, 0.8, 0.7, 1.4, 4.3, 2.1, 1.3, 1.3, 1.8, 1.2, 1.4],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [18.9, 29.8, 15.9, 14.4, 16.4, 18.4, 20.2, 19.1, 13.7, 15.2, 12.6, 11.4, 14.0],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: '코웨이',
-                data: [81.1, 74.1, 81.5, 87.0, 93.3, 100.0, 87.1, 73.8, 67.1, 72.2, 85.8, 79.9, 97.7],
-                borderColor: '#00A651',
-                backgroundColor: '#00A65118',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('구독_2'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [2.3, 1.5, 1.1, 0.8, 0.9, 0.9, 1.0, 1.0, 1.0, 0.8, 1.1, 1.4, 1.3],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [16.6, 11.7, 9.4, 7.6, 7.0, 7.2, 14.7, 8.4, 7.0, 20.0, 8.9, 10.3, 10.5],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: '코웨이',
-                data: [100.0, 75.7, 53.6, 40.2, 38.2, 47.1, 47.0, 44.8, 47.9, 53.9, 61.8, 63.3, 75.9],
-                borderColor: '#00A651',
-                backgroundColor: '#00A65118',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('구독_3'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [31.5, 27.0, 24.7, 35.6, 46.3, 41.4, 100.0, 27.0, 1.4, 0.9, 1.5, 2.9, 7.8],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [18.4, 31.3, 44.4, 49.0, 54.8, 31.1, 67.4, 18.2, 2.3, 4.4, 2.4, 5.8, 12.4],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('구독_4'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [13.3, 10.2, 9.3, 7.4, 4.6, 3.2, 4.3, 7.0, 4.0, 72.6, 55.3, 4.8, 4.6],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [100.0, 45.2, 46.3, 39.3, 35.9, 89.9, 83.3, 44.5, 27.1, 49.0, 42.1, 35.4, 38.8],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('구독_5'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [60.4, 11.1, 10.3, 10.8, 11.9, 12.8, 9.5, 11.2, 10.1, 7.6, 7.7, 9.7, 12.4],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [40.5, 33.0, 30.2, 29.7, 30.7, 30.5, 50.8, 69.2, 71.8, 100.0, 88.3, 77.6, 66.3],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('구독_6'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [6.5, 7.5, 1.0, 1.1, 3.4, 4.4, 6.5, 2.4, 1.0, 2.1, 1.5, 0.9, 4.0],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [70.4, 48.8, 42.8, 39.1, 53.2, 62.0, 49.7, 47.2, 44.0, 40.6, 40.0, 100.0, 92.9],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('구독_7'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [4.1, 2.9, 1.5, 0.9, 0.9, 0.9, 1.3, 2.1, 3.4, 4.0, 2.8, 2.3, 2.4],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [71.1, 64.4, 48.5, 35.9, 36.1, 28.8, 35.5, 49.7, 58.5, 95.7, 73.1, 100.0, 61.8],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('구독_8'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [4.1, 10.5, 10.2, 14.3, 6.4, 4.1, 12.8, 8.6, 3.8, 6.0, 16.9, 4.5, 1.9],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [34.6, 23.3, 16.2, 21.8, 100.0, 31.6, 14.3, 37.2, 25.2, 25.2, 53.8, 6.8, 3.8],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('구독_9'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [13.7, 7.5, 5.9, 12.8, 16.8, 23.7, 30.5, 13.7, 19.9, 41.7, 46.7, 66.4, 73.2],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [30.2, 9.7, 9.7, 6.2, 21.2, 17.4, 15.9, 17.8, 41.4, 62.3, 63.6, 100.0, 47.4],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('구독_10'), {
-            type: 'line',
-            data: {
-                labels: ["25.03", "25.04", "25.05", "25.06", "25.07", "25.08", "25.09", "25.10", "25.11", "25.12", "26.01", "26.02", "26.03"],
-                datasets: [
-                    {
-                label: '삼성',
-                data: [28.4, 21.6, 21.1, 21.1, 22.6, 26.6, 48.8, 24.3, 18.4, 18.0, 27.1, 20.1, 24.7],
-                borderColor: '#1428A0',
-                backgroundColor: '#1428A018',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: 'LG',
-                data: [82.7, 80.9, 84.2, 88.4, 90.5, 85.6, 100.0, 75.5, 63.1, 76.1, 95.5, 76.5, 75.1],
-                borderColor: '#A50034',
-                backgroundColor: '#A5003418',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            },
-            {
-                label: '코웨이',
-                data: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.5, 3.4, 3.9, 4.1, 3.8, 3.9],
-                borderColor: '#00A651',
-                backgroundColor: '#00A65118',
-                borderWidth: 2.5,
-                pointRadius: 3,
-                tension: 0.35,
-                fill: false
-            }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { position: 'top', labels: { font: { size: 12 }, padding: 12 } },
-                    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}` } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-                    y: { beginAtZero: true, grid: { color: '#f0f0f0' }, ticks: { font: { size: 11 } } }
-                }
-            }
-        });
-
-        new Chart(document.getElementById('bar_trend'), {
-            type: 'bar',
-            data: {
-                labels: ["\ub0c9\uc7a5\uace0", "\uc138\ud0c1\uae30", "\uc5d0\uc5b4\ucee8", "TV", "\uac74\uc870\uae30", "\uc815\uc218\uae30", "\uacf5\uae30\uccad\uc815\uae30", "\uc2dd\uae30\uc138\ucc99\uae30", "\uccad\uc18c\uae30", "\ub85c\ubd07\uccad\uc18c\uae30", "\uc758\ub958\uad00\ub9ac\uae30"],
-                datasets: [
-                    { label: '삼성', data: [73.1, 78.7, 32.3, 63.7, 76.8, 29.2, 39.3, 75.0, 77.9, 61.7, 22.2], backgroundColor: '#1428A0CC', borderRadius: 4 },
-                    { label: 'LG',   data: [64.5, 77.9, 27.9, 83.1, 77.4, 76.7, 60.0, 72.3, 84.1, 30.7, 80.1], backgroundColor: '#A50034CC',      borderRadius: 4 }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { position: 'top' } },
-                scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' } }, x: { grid: { display: false } } } }
-        });
-        new Chart(document.getElementById('bar_subscribe'), {
-            type: 'bar',
-            data: {
-                labels: ["\uad6c\ub3c5\ube0c\ub79c\ub4dc", "\uc815\uc218\uae30\uad6c\ub3c5", "\uacf5\uae30\uccad\uc815\uae30\uad6c\ub3c5", "\uc5d0\uc5b4\ucee8\uad6c\ub3c5", "\uac74\uc870\uae30\uad6c\ub3c5", "\uc138\ud0c1\uae30\uad6c\ub3c5", "\uc2dd\uae30\uc138\ucc99\uae30\uad6c\ub3c5", "\uc758\ub958\uad00\ub9ac\uae30\uad6c\ub3c5", "\uccad\uc18c\uae30\uad6c\ub3c5", "\ub85c\ubd07\uccad\uc18c\uae30\uad6c\ub3c5", "\uac00\uc804\uad6c\ub3c5\uc77c\ubc18"],
-                datasets: [
-                    { label: '삼성',  data: [1.9, 1.4, 1.2, 26.8, 15.4, 14.3, 3.2, 2.3, 8.0, 28.7, 24.8], backgroundColor: '#1428A0CC', borderRadius: 4 },
-                    { label: 'LG',    data: [7.4, 16.9, 10.7, 26.3, 52.1, 55.3, 56.2, 58.4, 30.3, 34.1, 82.6], backgroundColor: '#A50034CC',      borderRadius: 4 },
-                    { label: '코웨이', data: [77.8, 83.1, 57.6, 0, 0, 0, 0, 0, 0, 0, 1.5], backgroundColor: '#00A651CC',   borderRadius: 4 }
-                ]
-            },
-            options: { responsive: true, maintainAspectRatio: false,
-                plugins: { legend: { position: 'top' } },
-                scales: { y: { beginAtZero: true, grid: { color: '#f0f0f0' } }, x: { grid: { display: false } } } }
-        });
+// ── 초기 렌더 ────────────────────────────────────────
+buildSection('trend',     trendData,     13);
+buildSection('subscribe', subscribeData, 13);
 </script>
 </body>
 </html>
