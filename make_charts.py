@@ -353,28 +353,31 @@ function slicedData(sectionData, months) {{
 }}
 
 // ── 갭 annotation 생성 ───────────────────────────────
-function buildGapAnnotations(cat, seriesSlice, labels) {{
+function buildGapAnnotations(cat, seriesSlice, labels, filterLabel) {{
     const s = seriesSlice[cat] && seriesSlice[cat]['삼성'];
     const l = seriesSlice[cat] && seriesSlice[cat]['LG'];
     if (!s || !l || s.length === 0) return {{}};
 
-    function anno(key, xLabel, sv, lv) {{
-        const gap   = lv !== 0 ? (sv - lv) / lv * 100 : 0;
+    function calcGap(sv, lv) {{ return lv !== 0 ? (sv - lv) / lv * 100 : 0; }}
+
+    function anno(xLabel, sv, lv, extraLine) {{
+        const gap   = calcGap(sv, lv);
         const color = gap >= 0 ? '#1428A0' : '#A50034';
         const sign  = gap >= 0 ? '+' : '';
+        const lines = [`${{sign}}${{gap.toFixed(1)}}%`];
+        if (extraLine) lines.push(extraLine);
         return {{
             type: 'line',
             xMin: xLabel, xMax: xLabel,
             yMin: Math.min(sv, lv), yMax: Math.max(sv, lv),
-            borderColor: color,
-            borderWidth: 2,
+            borderColor: color, borderWidth: 2,
             arrowHeads: {{
                 start: {{ enabled: true, fill: true, width: 7, length: 7 }},
                 end:   {{ enabled: true, fill: true, width: 7, length: 7 }}
             }},
             label: {{
                 display: true,
-                content: `${{sign}}${{gap.toFixed(1)}}%`,
+                content: lines.length === 1 ? lines[0] : lines,
                 backgroundColor: color + 'ee',
                 color: '#fff',
                 font: {{ size: 11, weight: 'bold' }},
@@ -385,9 +388,18 @@ function buildGapAnnotations(cat, seriesSlice, labels) {{
         }};
     }}
 
-    const n   = s.length;
-    const out = {{ gapEnd: anno('gapEnd', labels[n-1], s[n-1], l[n-1]) }};
-    if (n > 1) out.gapStart = anno('gapStart', labels[0], s[0], l[0]);
+    const n = s.length;
+
+    // 가장 최근 월 annotation: 현재갭 + 기간比 변화량
+    let deltaLine = null;
+    if (n > 1 && filterLabel) {{
+        const delta = calcGap(s[n-1], l[n-1]) - calcGap(s[0], l[0]);
+        const tri   = delta >= 0 ? '🔺' : '🔻';
+        deltaLine   = `${{filterLabel}}比 ${{tri}}${{Math.abs(delta).toFixed(1)}}%p`;
+    }}
+
+    const out = {{ gapEnd: anno(labels[n-1], s[n-1], l[n-1], deltaLine) }};
+    if (n > 1) out.gapStart = anno(labels[0], s[0], l[0], null);
     return out;
 }}
 
@@ -426,9 +438,12 @@ function updateBarChart(sid, sectionData, seriesSlice) {{
 }}
 
 // ── 섹션 초기 빌드 ────────────────────────────────────
+const FILTER_LABELS = {{ 13: '1년전', 6: '6개월전', 3: '3개월전' }};
+
 function buildSection(sid, sectionData, months) {{
     const {{ periods, labels, series }} = slicedData(sectionData, months);
     const cats = sectionData.cats;
+    const filterLabel = FILTER_LABELS[months] || '1년전';
     const COLORS = {{"삼성":"#1428A0","LG":"#A50034","코웨이":"#00A651"}};
 
     cats.forEach((cat, i) => {{
@@ -459,7 +474,7 @@ function buildSection(sid, sectionData, months) {{
                 plugins: {{
                     legend: {{ position:'top', labels:{{ font:{{size:11}}, padding:10 }} }},
                     tooltip: {{ callbacks: {{ label: ctx=>`  ${{ctx.dataset.label}}: ${{ctx.parsed.y.toFixed(1)}}` }} }},
-                    annotation: {{ annotations: buildGapAnnotations(cat, series, labels) }}
+                    annotation: {{ annotations: buildGapAnnotations(cat, series, labels, filterLabel) }}
                 }},
                 scales: {{
                     x: {{ grid:{{display:false}}, ticks:{{font:{{size:10}}}} }},
@@ -502,6 +517,7 @@ function filterSection(sid, months, btn) {{
 
     const sectionData = sid==='trend' ? trendData : subscribeData;
     const {{ periods, labels, series }} = slicedData(sectionData, months);
+    const filterLabel = FILTER_LABELS[months] || '';
 
     sectionData.cats.forEach((cat, i) => {{
         const cid = sid+'_'+i;
@@ -512,7 +528,7 @@ function filterSection(sid, months, btn) {{
         brands.forEach((b, di) => {{
             chart.data.datasets[di].data = series[cat][b];
         }});
-        chart.options.plugins.annotation.annotations = buildGapAnnotations(cat, series, labels);
+        chart.options.plugins.annotation.annotations = buildGapAnnotations(cat, series, labels, filterLabel);
         chart.update();
         updateFooter(cid, cat, series, sectionData.brandsPerCat, labels);
     }});
