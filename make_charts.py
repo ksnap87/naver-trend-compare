@@ -169,38 +169,6 @@ def build_js_data(section_id, data, periods, keyword_dict):
         colors=json.dumps(BRAND_COLORS, ensure_ascii=False),
     )
 
-# ── 이벤트 로드 / JS 직렬화 ────────────────────────────────────────
-
-def load_events():
-    files = sorted(glob.glob(os.path.join(OUTPUT_DIR, "events_*.json")))
-    if not files:
-        return {}, {}
-    with open(files[-1], encoding="utf-8") as f:
-        d = json.load(f)
-    return d.get("trend", {}), d.get("subscribe", {})
-
-
-def build_js_events(trend_ev, subscribe_ev):
-    """period 키 '2025-07-01' → label 키 '25.07' 로 변환해 JS 변수로 직렬화"""
-    def convert(src):
-        out = {}
-        for cat, brands in src.items():
-            out[cat] = {}
-            for brand, pnews in brands.items():
-                out[cat][brand] = {}
-                for period, news in pnews.items():
-                    out[cat][brand][month_label(period)] = {
-                        "title":   news["title"],
-                        "link":    news["link"],
-                        "pubDate": news.get("pubDate", ""),
-                    }
-        return out
-
-    return "\n    const trendEvents = {t};\n    const subscribeEvents = {s};".format(
-        t=json.dumps(convert(trend_ev),     ensure_ascii=False),
-        s=json.dumps(convert(subscribe_ev), ensure_ascii=False),
-    )
-
 
 # ── 메인 ───────────────────────────────────────────────────────────
 
@@ -225,12 +193,6 @@ def main():
 
     js_trend     = build_js_data("trend",     trend_data,     periods, TREND_KEYWORDS)
     js_subscribe = build_js_data("subscribe", subscribe_data, periods, SUBSCRIBE_KEYWORDS)
-
-    trend_ev, subscribe_ev = load_events()
-    js_events = build_js_events(trend_ev, subscribe_ev)
-    n_events  = sum(len(p) for b in trend_ev.values() for p in b.values()) \
-              + sum(len(p) for b in subscribe_ev.values() for p in b.values())
-    print("  이벤트: {}건 로드".format(n_events))
 
     start_lbl = month_label(periods[0])
     end_lbl   = month_label(periods[-1])
@@ -299,25 +261,9 @@ section{{max-width:1400px;margin:28px auto 0;padding:0 20px}}
 .kw-brand{{font-weight:700;white-space:nowrap;padding-right:8px!important;width:44px}}
 .kw-pill{{display:inline-block;border:1px solid;border-radius:10px;padding:1px 7px;margin:2px 2px;font-size:10px;background:#fafafa}}
 hr.divider{{border:none;border-top:1px solid #ddd;margin:32px 0 0}}
-/* 뉴스 툴팁 */
-#news-tt{{
-    display:none;position:fixed;z-index:9999;pointer-events:none;
-    background:#fff;border-radius:10px;padding:11px 14px;max-width:280px;
-    box-shadow:0 4px 20px rgba(0,0,0,.18);border:1px solid #eee;
-}}
-#news-tt .nt-brand{{font-size:11px;font-weight:700;margin-bottom:3px}}
-#news-tt .nt-date{{font-size:10px;color:#aaa;margin-bottom:6px}}
-#news-tt .nt-title{{font-size:12px;color:#222;line-height:1.5}}
-#news-tt .nt-hint{{font-size:10px;color:#888;margin-top:7px}}
 </style>
 </head>
 <body>
-<div id="news-tt">
-  <div class="nt-brand" id="nt-brand"></div>
-  <div class="nt-date"  id="nt-date"></div>
-  <div class="nt-title" id="nt-title"></div>
-  <div class="nt-hint">클릭하여 기사 보기 →</div>
-</div>
 <header>
   <h1>📊 네이버 월별 검색량 비교 차트</h1>
   <p>기간: {start} ~ {end} &nbsp;|&nbsp; 단위: 월간 상대지수 &nbsp;|&nbsp; 생성일: {date}</p>
@@ -381,74 +327,6 @@ hr.divider{{border:none;border-top:1px solid #ddd;margin:32px 0 0}}
 <script>
 {js_trend}
 {js_subscribe}
-{js_events}
-
-// ── 뉴스 툴팁 ────────────────────────────────────────
-let _mouseX = 0, _mouseY = 0;
-document.addEventListener('mousemove', e => {{ _mouseX = e.clientX; _mouseY = e.clientY; }});
-
-function showNewsTooltip(brand, info, event) {{
-    const tt = document.getElementById('news-tt');
-    const COLORS = {{"삼성":"#1428A0","LG":"#A50034","코웨이":"#00A651"}};
-    document.getElementById('nt-brand').style.color = COLORS[brand] || '#333';
-    document.getElementById('nt-brand').textContent = brand;
-    document.getElementById('nt-date').textContent  = info.pubDate;
-    document.getElementById('nt-title').textContent = info.title;
-    tt._link = info.link;
-    const x = (event && event.native) ? event.native.clientX : _mouseX;
-    const y = (event && event.native) ? event.native.clientY : _mouseY;
-    tt.style.left    = (x + 14) + 'px';
-    tt.style.top     = (y - 20) + 'px';
-    tt.style.display = 'block';
-}}
-function hideNewsTooltip() {{
-    document.getElementById('news-tt').style.display = 'none';
-}}
-document.getElementById('news-tt').addEventListener('click', () => {{
-    const link = document.getElementById('news-tt')._link;
-    if (link) window.open(link, '_blank');
-}});
-document.getElementById('news-tt').style.pointerEvents = 'auto';
-document.getElementById('news-tt').style.cursor = 'pointer';
-
-// ── 뉴스 annotation 생성 ─────────────────────────────
-function buildNewsAnnotations(sid, cat, labels, series) {{
-    const evSrc = sid === 'trend' ? trendEvents : subscribeEvents;
-    if (!evSrc || !evSrc[cat]) return {{}};
-    const out = {{}};
-    let idx = 0;
-    for (const brand of Object.keys(evSrc[cat])) {{
-        for (const period of Object.keys(evSrc[cat][brand])) {{
-            const li = labels.indexOf(period);
-            if (li < 0) continue;
-            const info       = evSrc[cat][brand][period];
-            const brandSer   = series[cat] && series[cat][brand];
-            const yVal       = brandSer ? brandSer[li] : null;
-            const key        = 'news_' + brand + '_' + idx;
-            const _brand     = brand;
-            const _info      = info;
-            out[key] = {{
-                type: 'label',
-                xValue: li,
-                yValue: yVal,
-                yAdjust: -20,
-                content: '★',
-                font: {{ size: 15, weight: 'bold' }},
-                color: '#FFD700',
-                backgroundColor: 'rgba(255,255,255,0.92)',
-                borderColor: '#FFD700',
-                borderWidth: 1.5,
-                borderRadius: 8,
-                padding: {{ x: 4, y: 2 }},
-                enter(ctx, evt) {{ showNewsTooltip(_brand, _info, evt); }},
-                leave()         {{ hideNewsTooltip(); }},
-                click(ctx, evt) {{ window.open(_info.link, '_blank'); }}
-            }};
-            idx++;
-        }}
-    }}
-    return out;
-}}
 
 // ── 차트 인스턴스 저장소 ─────────────────────────────
 const chartInstances = {{ trend: {{}}, subscribe: {{}} }};
@@ -597,7 +475,7 @@ function buildSection(sid, sectionData, months) {{
                 plugins: {{
                     legend: {{ position:'top', labels:{{ font:{{size:11}}, padding:10 }} }},
                     tooltip: {{ callbacks: {{ label: ctx=>`  ${{ctx.dataset.label}}: ${{ctx.parsed.y.toFixed(1)}}` }} }},
-                    annotation: {{ annotations: Object.assign({{}}, buildGapAnnotations(cat, series, labels, filterLabel), buildNewsAnnotations(sid, cat, labels, series)) }}
+                    annotation: {{ annotations: buildGapAnnotations(cat, series, labels, filterLabel) }}
                 }},
                 scales: {{
                     x: {{ grid:{{display:false}}, ticks:{{font:{{size:10}}}} }},
@@ -651,7 +529,7 @@ function filterSection(sid, months, btn) {{
         brands.forEach((b, di) => {{
             chart.data.datasets[di].data = series[cat][b];
         }});
-        chart.options.plugins.annotation.annotations = Object.assign({{}}, buildGapAnnotations(cat, series, labels, filterLabel), buildNewsAnnotations(sid, cat, labels, series));
+        chart.options.plugins.annotation.annotations = buildGapAnnotations(cat, series, labels, filterLabel);
         chart.update();
         updateFooter(cid, cat, series, sectionData.brandsPerCat, labels);
     }});
@@ -701,7 +579,6 @@ buildSection('subscribe', subscribeData, 13);
         cards_subscribe=cards_subscribe,
         js_trend=js_trend,
         js_subscribe=js_subscribe,
-        js_events=js_events,
     )
 
     with open(out_path, "w", encoding="utf-8") as f:
