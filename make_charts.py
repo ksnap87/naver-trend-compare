@@ -296,9 +296,18 @@ section{{max-width:1400px;margin:28px auto 0;padding:0 20px}}
 .kw-brand{{font-weight:700;white-space:nowrap;padding-right:8px!important;width:44px}}
 .kw-pill{{display:inline-block;border:1px solid;border-radius:10px;padding:1px 7px;margin:2px 2px;font-size:10px;background:#fafafa}}
 hr.divider{{border:none;border-top:1px solid #ddd;margin:32px 0 0}}
+/* 외부 툴팁 */
+#ext-tt{{
+    position:fixed;z-index:9999;pointer-events:none;
+    background:rgba(20,20,20,.88);color:#fff;
+    border-radius:8px;padding:9px 13px;font-size:12px;line-height:1.6;
+    box-shadow:0 3px 14px rgba(0,0,0,.25);
+    opacity:0;transition:opacity .1s;max-width:300px;
+}}
 </style>
 </head>
 <body>
+<div id="ext-tt"></div>
 <header>
   <h1>📊 네이버 월별 검색량 비교 차트</h1>
   <p>기간: {start} ~ {end} &nbsp;|&nbsp; 단위: 월간 상대지수 &nbsp;|&nbsp; 생성일: {date}</p>
@@ -363,6 +372,42 @@ hr.divider{{border:none;border-top:1px solid #ddd;margin:32px 0 0}}
 {js_trend}
 {js_subscribe}
 {js_events}
+
+// ── 외부 툴팁 핸들러 ─────────────────────────────────
+function externalTooltipHandler(context) {{
+    const {{ chart, tooltip }} = context;
+    const tt = document.getElementById('ext-tt');
+    if (tooltip.opacity === 0) {{ tt.style.opacity = '0'; return; }}
+
+    const title = tooltip.title?.[0] || '';
+    const lines = (tooltip.body || []).map(b => b.lines).flat();
+    tt.innerHTML =
+        `<div style="font-weight:700;margin-bottom:3px">${{title}}</div>` +
+        lines.map(l => `<div>${{l.trim()}}</div>`).join('');
+
+    const rect    = chart.canvas.getBoundingClientRect();
+    const sid     = chart._sid;
+    const cat     = chart._cat;
+    const evSrc   = sid === 'trend' ? trendEvents : subscribeEvents;
+    const hasNews = evSrc?.[cat] && (tooltip.dataPoints || []).some(dp =>
+        evSrc[cat]?.[dp.dataset.label]?.[title]
+    );
+
+    tt.style.opacity = '1';
+    if (hasNews) {{
+        const ttH = tt.offsetHeight || 60;
+        let lx = rect.left + tooltip.caretX;
+        lx = Math.min(lx, window.innerWidth - 320);
+        tt.style.left = lx + 'px';
+        tt.style.top  = (rect.top - ttH - 10) + 'px';
+    }} else {{
+        let lx = rect.left + tooltip.caretX + 14;
+        let ly = rect.top  + tooltip.caretY - (tt.offsetHeight || 40) / 2;
+        lx = Math.min(lx, window.innerWidth - 320);
+        tt.style.left = lx + 'px';
+        tt.style.top  = ly + 'px';
+    }}
+}}
 
 // ── 스파이크 포인트 스타일 적용 ──────────────────────
 function applySpikeStyles(sid, cat, datasets, labels) {{
@@ -532,7 +577,7 @@ function buildSection(sid, sectionData, months) {{
                 interaction: {{ mode:'index', intersect:false }},
                 plugins: {{
                     legend: {{ position:'top', labels:{{ font:{{size:11}}, padding:10 }} }},
-                    tooltip: {{ position: 'nearest', callbacks: {{ label: c => {{
+                    tooltip: {{ enabled: false, external: externalTooltipHandler, callbacks: {{ label: c => {{
                         const base = `  ${{c.dataset.label}}: ${{c.parsed.y.toFixed(1)}}`;
                         const evSrc = sid === 'trend' ? trendEvents : subscribeEvents;
                         const brand = c.dataset.label;
@@ -551,6 +596,8 @@ function buildSection(sid, sectionData, months) {{
                 }}
             }}
         }});
+        chartInstances[sid][cat]._sid = sid;
+        chartInstances[sid][cat]._cat = cat;
         updateFooter(cid, cat, series, sectionData.brandsPerCat, labels);
     }});
 
