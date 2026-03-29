@@ -432,7 +432,7 @@ function buildNewsAnnotations(sid, cat, labels, series) {{
                 xValue: period,
                 yValue: yVal,
                 yAdjust: -22,
-                content: '📌',
+                content: '⭐',
                 font: {{ size: 15 }},
                 backgroundColor: 'transparent',
                 borderWidth: 0,
