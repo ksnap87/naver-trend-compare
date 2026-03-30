@@ -28,9 +28,6 @@ jobs:
           python3 naver_trend_compare.py
           python3 naver_trend_subscribe.py
 
-      - name: Fetch news events
-        run: python3 fetch_events.py
-
       - name: Build chart HTML
         run: |
           python3 make_charts.py
