@@ -2,3 +2,16 @@ __pycache__/
 *.pyc
 .DS_Store
 output/*.csv
+
+# 시크릿 / 자격 증명
+.env
+.env.*
+*.key
+*.pem
+credentials.json
+secrets.json
+service-account*.json
+
+# Claude Code 로컬 설정
+.claude/settings.local.json
+.claude/worktrees/
