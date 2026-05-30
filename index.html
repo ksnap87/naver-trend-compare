@@ -44,10 +44,23 @@ section{max-width:1400px;margin:28px auto 0;padding:0 20px}
 .summary-bar-wrap{height:190px}
 /* grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:14px}
-.card{background:#fff;border-radius:14px;padding:18px 18px 12px;box-shadow:0 2px 10px rgba(0,0,0,.07);transition:box-shadow .2s}
+.card{background:#fff;border-radius:14px;padding:18px 18px 12px;box-shadow:0 2px 10px rgba(0,0,0,.07);transition:box-shadow .2s;position:relative}
 .card:hover{box-shadow:0 6px 20px rgba(0,0,0,.12)}
 .card-title{font-size:14px;font-weight:700;color:#222;margin-bottom:10px}
 .chart-wrap{height:175px;position:relative}
+/* gap indicator */
+.gap-badge{
+    display:none;position:absolute;top:12px;right:14px;z-index:5;
+    align-items:center;gap:5px;
+    background:rgba(20,40,160,.10);border:1.5px solid rgba(20,40,160,.35);
+    border-radius:8px;padding:3px 10px 3px 7px;font-size:11px;font-weight:700;color:#1428A0;
+}
+.gap-badge.show{display:inline-flex}
+.gap-badge .tri{
+    display:inline-block;width:0;height:0;
+    border-left:5px solid transparent;border-right:5px solid transparent;
+    border-bottom:9px solid #1428A0;
+}
 .card-footer{font-size:11.5px;color:#555;margin-top:8px;text-align:center;min-height:18px}
 /* keywords */
 .kw-details{margin-top:8px;border-top:1px solid #eee;padding-top:7px}
@@ -106,6 +119,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
   <div class="grid" id="subscribe-grid">
         <div class="card">
             <div class="card-title">구독브랜드</div>
+            <div class="gap-badge" id="subscribe_0_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="subscribe_0"></canvas></div>
             <div class="card-footer" id="subscribe_0_footer"></div>
             
@@ -116,6 +130,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">정수기구독</div>
+            <div class="gap-badge" id="subscribe_1_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="subscribe_1"></canvas></div>
             <div class="card-footer" id="subscribe_1_footer"></div>
             
@@ -126,6 +141,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">공기청정기구독</div>
+            <div class="gap-badge" id="subscribe_2_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="subscribe_2"></canvas></div>
             <div class="card-footer" id="subscribe_2_footer"></div>
             
@@ -136,6 +152,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">에어컨구독</div>
+            <div class="gap-badge" id="subscribe_3_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="subscribe_3"></canvas></div>
             <div class="card-footer" id="subscribe_3_footer"></div>
             
@@ -146,6 +163,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">건조기구독</div>
+            <div class="gap-badge" id="subscribe_4_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="subscribe_4"></canvas></div>
             <div class="card-footer" id="subscribe_4_footer"></div>
             
@@ -156,6 +174,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">세탁기구독</div>
+            <div class="gap-badge" id="subscribe_5_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="subscribe_5"></canvas></div>
             <div class="card-footer" id="subscribe_5_footer"></div>
             
@@ -166,6 +185,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">식기세척기구독</div>
+            <div class="gap-badge" id="subscribe_6_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="subscribe_6"></canvas></div>
             <div class="card-footer" id="subscribe_6_footer"></div>
             
@@ -176,6 +196,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">의류관리기구독</div>
+            <div class="gap-badge" id="subscribe_7_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="subscribe_7"></canvas></div>
             <div class="card-footer" id="subscribe_7_footer"></div>
             
@@ -186,6 +207,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">청소기구독</div>
+            <div class="gap-badge" id="subscribe_8_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="subscribe_8"></canvas></div>
             <div class="card-footer" id="subscribe_8_footer"></div>
             
@@ -196,6 +218,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">로봇청소기구독</div>
+            <div class="gap-badge" id="subscribe_9_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="subscribe_9"></canvas></div>
             <div class="card-footer" id="subscribe_9_footer"></div>
             
@@ -206,6 +229,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">가전구독일반</div>
+            <div class="gap-badge" id="subscribe_10_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="subscribe_10"></canvas></div>
             <div class="card-footer" id="subscribe_10_footer"></div>
             
@@ -242,6 +266,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
   <div class="grid" id="trend-grid">
         <div class="card">
             <div class="card-title">냉장고</div>
+            <div class="gap-badge" id="trend_0_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="trend_0"></canvas></div>
             <div class="card-footer" id="trend_0_footer"></div>
             
@@ -252,6 +277,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">세탁기</div>
+            <div class="gap-badge" id="trend_1_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="trend_1"></canvas></div>
             <div class="card-footer" id="trend_1_footer"></div>
             
@@ -262,6 +288,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">에어컨</div>
+            <div class="gap-badge" id="trend_2_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="trend_2"></canvas></div>
             <div class="card-footer" id="trend_2_footer"></div>
             
@@ -272,6 +299,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">TV</div>
+            <div class="gap-badge" id="trend_3_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="trend_3"></canvas></div>
             <div class="card-footer" id="trend_3_footer"></div>
             
@@ -282,6 +310,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">건조기</div>
+            <div class="gap-badge" id="trend_4_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="trend_4"></canvas></div>
             <div class="card-footer" id="trend_4_footer"></div>
             
@@ -292,6 +321,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">정수기</div>
+            <div class="gap-badge" id="trend_5_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="trend_5"></canvas></div>
             <div class="card-footer" id="trend_5_footer"></div>
             
@@ -302,6 +332,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">공기청정기</div>
+            <div class="gap-badge" id="trend_6_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="trend_6"></canvas></div>
             <div class="card-footer" id="trend_6_footer"></div>
             
@@ -312,6 +343,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">식기세척기</div>
+            <div class="gap-badge" id="trend_7_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="trend_7"></canvas></div>
             <div class="card-footer" id="trend_7_footer"></div>
             
@@ -322,6 +354,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">청소기</div>
+            <div class="gap-badge" id="trend_8_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="trend_8"></canvas></div>
             <div class="card-footer" id="trend_8_footer"></div>
             
@@ -332,6 +365,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">로봇청소기</div>
+            <div class="gap-badge" id="trend_9_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="trend_9"></canvas></div>
             <div class="card-footer" id="trend_9_footer"></div>
             
@@ -342,6 +376,7 @@ hr.divider{border:none;border-top:1px solid #ddd;margin:32px 0 0}
         </div>
         <div class="card">
             <div class="card-title">의류관리기</div>
+            <div class="gap-badge" id="trend_10_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="trend_10"></canvas></div>
             <div class="card-footer" id="trend_10_footer"></div>
             
@@ -508,6 +543,25 @@ function buildGapAnnotations(cat, seriesSlice, labels, filterLabel) {
     return out;
 }
 
+// ── 갭 확대 배지 ────────────────────────────────────────
+function updateGapBadge(cid, cat, seriesSlice) {
+    const el = document.getElementById(cid + '_gap');
+    if (!el) return;
+    const s = seriesSlice[cat] && seriesSlice[cat]['삼성'];
+    const l = seriesSlice[cat] && seriesSlice[cat]['LG'];
+    if (!s || !l || s.length < 2) { el.classList.remove('show'); return; }
+    const n = s.length;
+    const gapStart = Math.abs(s[0] - l[0]);
+    const gapEnd   = Math.abs(s[n-1] - l[n-1]);
+    if (gapEnd > gapStart) {
+        const diff = (gapEnd - gapStart).toFixed(1);
+        el.querySelector('.gap-txt').textContent = '갭확대 +' + diff + 'p';
+        el.classList.add('show');
+    } else {
+        el.classList.remove('show');
+    }
+}
+
 // ── footer 텍스트 업데이트 ────────────────────────────
 function updateFooter(cid, cat, seriesSlice, brandsPerCat, labels) {
     const brands = brandsPerCat[cat];
@@ -602,6 +656,7 @@ function buildSection(sid, sectionData, months) {
         chartInstances[sid][cat]._sid = sid;
         chartInstances[sid][cat]._cat = cat;
         updateFooter(cid, cat, series, sectionData.brandsPerCat, labels);
+        updateGapBadge(cid, cat, series);
     });
 
     // 바 차트
@@ -653,6 +708,7 @@ function filterSection(sid, months, btn) {
         chart.options.plugins.annotation.annotations = buildGapAnnotations(cat, series, labels, filterLabel);
         chart.update();
         updateFooter(cid, cat, series, sectionData.brandsPerCat, labels);
+        updateGapBadge(cid, cat, series);
     });
     updateBarChart(sid, sectionData, { series });
 }
