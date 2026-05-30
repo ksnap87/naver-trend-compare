@@ -128,6 +128,7 @@ def build_cards_html(section_id, data, keyword_dict):
         cards += """
         <div class="card">
             <div class="card-title">{cat}</div>
+            <div class="gap-badge" id="{cid}_gap"><span class="tri"></span><span class="gap-txt"></span></div>
             <div class="chart-wrap"><canvas id="{cid}"></canvas></div>
             <div class="card-footer" id="{cid}_footer"></div>
             {kw}
@@ -279,10 +280,23 @@ section{{max-width:1400px;margin:28px auto 0;padding:0 20px}}
 .summary-bar-wrap{{height:190px}}
 /* grid */
 .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(420px,1fr));gap:14px}}
-.card{{background:#fff;border-radius:14px;padding:18px 18px 12px;box-shadow:0 2px 10px rgba(0,0,0,.07);transition:box-shadow .2s}}
+.card{{background:#fff;border-radius:14px;padding:18px 18px 12px;box-shadow:0 2px 10px rgba(0,0,0,.07);transition:box-shadow .2s;position:relative}}
 .card:hover{{box-shadow:0 6px 20px rgba(0,0,0,.12)}}
 .card-title{{font-size:14px;font-weight:700;color:#222;margin-bottom:10px}}
 .chart-wrap{{height:175px;position:relative}}
+/* gap indicator */
+.gap-badge{{
+    display:none;position:absolute;top:12px;right:14px;z-index:5;
+    align-items:center;gap:5px;
+    background:rgba(20,40,160,.10);border:1.5px solid rgba(20,40,160,.35);
+    border-radius:8px;padding:3px 10px 3px 7px;font-size:11px;font-weight:700;color:#1428A0;
+}}
+.gap-badge.show{{display:inline-flex}}
+.gap-badge .tri{{
+    display:inline-block;width:0;height:0;
+    border-left:5px solid transparent;border-right:5px solid transparent;
+    border-bottom:9px solid #1428A0;
+}}
 .card-footer{{font-size:11.5px;color:#555;margin-top:8px;text-align:center;min-height:18px}}
 /* keywords */
 .kw-details{{margin-top:8px;border-top:1px solid #eee;padding-top:7px}}
@@ -505,6 +519,25 @@ function buildGapAnnotations(cat, seriesSlice, labels, filterLabel) {{
     return out;
 }}
 
+// ── 갭 확대 배지 ────────────────────────────────────────
+function updateGapBadge(cid, cat, seriesSlice) {{
+    const el = document.getElementById(cid + '_gap');
+    if (!el) return;
+    const s = seriesSlice[cat] && seriesSlice[cat]['삼성'];
+    const l = seriesSlice[cat] && seriesSlice[cat]['LG'];
+    if (!s || !l || s.length < 2) {{ el.classList.remove('show'); return; }}
+    const n = s.length;
+    const gapStart = Math.abs(s[0] - l[0]);
+    const gapEnd   = Math.abs(s[n-1] - l[n-1]);
+    if (gapEnd > gapStart) {{
+        const diff = (gapEnd - gapStart).toFixed(1);
+        el.querySelector('.gap-txt').textContent = '갭확대 +' + diff + 'p';
+        el.classList.add('show');
+    }} else {{
+        el.classList.remove('show');
+    }}
+}}
+
 // ── footer 텍스트 업데이트 ────────────────────────────
 function updateFooter(cid, cat, seriesSlice, brandsPerCat, labels) {{
     const brands = brandsPerCat[cat];
@@ -599,6 +632,7 @@ function buildSection(sid, sectionData, months) {{
         chartInstances[sid][cat]._sid = sid;
         chartInstances[sid][cat]._cat = cat;
         updateFooter(cid, cat, series, sectionData.brandsPerCat, labels);
+        updateGapBadge(cid, cat, series);
     }});
 
     // 바 차트
@@ -650,6 +684,7 @@ function filterSection(sid, months, btn) {{
         chart.options.plugins.annotation.annotations = buildGapAnnotations(cat, series, labels, filterLabel);
         chart.update();
         updateFooter(cid, cat, series, sectionData.brandsPerCat, labels);
+        updateGapBadge(cid, cat, series);
     }});
     updateBarChart(sid, sectionData, {{ series }});
 }}
