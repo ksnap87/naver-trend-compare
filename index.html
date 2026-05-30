@@ -500,10 +500,12 @@ function buildGapAnnotations(cat, seriesSlice, labels, filterLabel) {
 
     function calcGap(sv, lv) { return lv !== 0 ? (sv - lv) / lv * 100 : 0; }
 
-    function anno(xLabel, sv, lv) {
+    function anno(xLabel, sv, lv, extraLine) {
         const gap   = calcGap(sv, lv);
         const color = gap >= 0 ? '#1428A0' : '#A50034';
         const sign  = gap >= 0 ? '+' : '';
+        const lines = [`${sign}${gap.toFixed(1)}%`];
+        if (extraLine) lines.push(extraLine);
         return {
             type: 'line',
             xMin: xLabel, xMax: xLabel,
@@ -515,7 +517,7 @@ function buildGapAnnotations(cat, seriesSlice, labels, filterLabel) {
             },
             label: {
                 display: true,
-                content: `${sign}${gap.toFixed(1)}%`,
+                content: lines.length === 1 ? lines[0] : lines,
                 backgroundColor: color + 'ee',
                 color: '#fff',
                 font: { size: 11, weight: 'bold' },
@@ -527,27 +529,16 @@ function buildGapAnnotations(cat, seriesSlice, labels, filterLabel) {
     }
 
     const n = s.length;
-    const out = { gapEnd: anno(labels[n-1], s[n-1], l[n-1]) };
-    if (n > 1) out.gapStart = anno(labels[0], s[0], l[0]);
 
+    let deltaLine = null;
     if (n > 1 && filterLabel) {
         const delta = calcGap(s[n-1], l[n-1]) - calcGap(s[0], l[0]);
-        const deltaColor = delta >= 0 ? '#1428A0' : '#A50034';
-        const tri = delta >= 0 ? '▲' : '▼';
-        out.gapDelta = {
-            type: 'label',
-            xValue: labels[n-1],
-            yValue: Math.max(s[n-1], l[n-1]),
-            content: `${filterLabel}比 ${tri} ${Math.abs(delta).toFixed(1)}%p`,
-            backgroundColor: deltaColor + 'ee',
-            color: '#fff',
-            font: { size: 10, weight: 'bold' },
-            padding: { x: 5, y: 2 },
-            borderRadius: 4,
-            yAdjust: -20
-        };
+        const tri   = delta >= 0 ? '▲' : '▼';
+        deltaLine   = `${filterLabel}比 ${tri} ${Math.abs(delta).toFixed(1)}%p`;
     }
 
+    const out = { gapEnd: anno(labels[n-1], s[n-1], l[n-1], deltaLine) };
+    if (n > 1) out.gapStart = anno(labels[0], s[0], l[0], null);
     return out;
 }
 
