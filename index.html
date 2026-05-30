@@ -52,14 +52,14 @@ section{max-width:1400px;margin:28px auto 0;padding:0 20px}
 .gap-badge{
     display:none;position:absolute;top:12px;right:14px;z-index:5;
     align-items:center;gap:5px;
-    background:rgba(20,40,160,.10);border:1.5px solid rgba(20,40,160,.35);
-    border-radius:8px;padding:3px 10px 3px 7px;font-size:11px;font-weight:700;color:#1428A0;
+    border-radius:8px;padding:3px 10px 3px 7px;font-size:11px;font-weight:700;
+    border:1.5px solid;
 }
 .gap-badge.show{display:inline-flex}
 .gap-badge .tri{
     display:inline-block;width:0;height:0;
     border-left:5px solid transparent;border-right:5px solid transparent;
-    border-bottom:9px solid #1428A0;
+    border-bottom:9px solid;
 }
 .card-footer{font-size:11.5px;color:#555;margin-top:8px;text-align:center;min-height:18px}
 /* keywords */
@@ -551,11 +551,16 @@ function updateGapBadge(cid, cat, seriesSlice) {
     const l = seriesSlice[cat] && seriesSlice[cat]['LG'];
     if (!s || !l || s.length < 2) { el.classList.remove('show'); return; }
     const n = s.length;
-    const gapStart = Math.abs(s[0] - l[0]);
-    const gapEnd   = Math.abs(s[n-1] - l[n-1]);
-    if (gapEnd > gapStart) {
-        const diff = (gapEnd - gapStart).toFixed(1);
-        el.querySelector('.gap-txt').textContent = '갭확대 +' + diff + 'p';
+    const gapPctStart = l[0] !== 0 ? (s[0] - l[0]) / l[0] * 100 : 0;
+    const gapPctEnd   = l[n-1] !== 0 ? (s[n-1] - l[n-1]) / l[n-1] * 100 : 0;
+    if (Math.abs(gapPctEnd) > Math.abs(gapPctStart)) {
+        const diff = (Math.abs(gapPctEnd) - Math.abs(gapPctStart)).toFixed(1);
+        const color = gapPctEnd >= 0 ? '#1428A0' : '#A50034';
+        el.querySelector('.gap-txt').textContent = '갭확대 +' + diff + '%p';
+        el.querySelector('.tri').style.borderBottomColor = color;
+        el.style.color = color;
+        el.style.borderColor = color + '59';
+        el.style.background = color + '1a';
         el.classList.add('show');
     } else {
         el.classList.remove('show');
