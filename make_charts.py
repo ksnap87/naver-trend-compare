@@ -17,9 +17,8 @@ OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "output")
 
 SAMSUNG_COLOR = "#1428A0"
 LG_COLOR      = "#A50034"
-COWAY_COLOR   = "#00A651"
 
-BRAND_COLORS = {"삼성": SAMSUNG_COLOR, "LG": LG_COLOR, "코웨이": COWAY_COLOR}
+BRAND_COLORS = {"삼성": SAMSUNG_COLOR, "LG": LG_COLOR}
 
 # ── 키워드 정의 ────────────────────────────────────────────────────
 
@@ -50,14 +49,11 @@ TREND_KEYWORDS = {
 
 SUBSCRIBE_KEYWORDS = {
     "구독브랜드":    {"삼성": ["삼성구독","삼성 가전 구독","비스포크 구독","삼성 렌탈"],
-                    "LG":   ["LG케어솔루션","케어솔루션","LG 구독","LG 렌탈"],
-                    "코웨이":["코웨이","코웨이 렌탈","코웨이 구독"]},
+                    "LG":   ["LG케어솔루션","케어솔루션","LG 구독","LG 렌탈"]},
     "정수기구독":    {"삼성": ["삼성 정수기 렌탈","비스포크 정수기 렌탈","삼성 정수기 구독"],
-                    "LG":   ["LG 정수기 렌탈","퓨리케어 렌탈","LG 정수기 구독"],
-                    "코웨이":["코웨이 정수기","코웨이 정수기 렌탈","코웨이 정수기 구독"]},
+                    "LG":   ["LG 정수기 렌탈","퓨리케어 렌탈","LG 정수기 구독"]},
     "공기청정기구독": {"삼성": ["삼성 공기청정기 렌탈","비스포크 공기청정기 렌탈","삼성 공기청정기 구독"],
-                    "LG":   ["LG 공기청정기 렌탈","퓨리케어 공기청정기 렌탈","LG 공기청정기 구독"],
-                    "코웨이":["코웨이 공기청정기","코웨이 공기청정기 렌탈","코웨이 공기청정기 구독"]},
+                    "LG":   ["LG 공기청정기 렌탈","퓨리케어 공기청정기 렌탈","LG 공기청정기 구독"]},
     "에어컨구독":    {"삼성": ["삼성 에어컨 렌탈","무풍에어컨 렌탈","비스포크 에어컨 렌탈","삼성 에어컨 구독"],
                     "LG":   ["LG 에어컨 렌탈","휘센 에어컨 렌탈","LG 에어컨 구독"]},
     "건조기구독":    {"삼성": ["삼성 건조기 렌탈","비스포크 건조기 렌탈","삼성 건조기 구독"],
@@ -328,14 +324,13 @@ hr.divider{{border:none;border-top:1px solid #ddd;margin:32px 0 0}}
   <div class="legend-pills">
     <div class="pill"><div class="pill-dot" style="background:#1428A0"></div>삼성</div>
     <div class="pill"><div class="pill-dot" style="background:#A50034"></div>LG</div>
-    <div class="pill"><div class="pill-dot" style="background:#00A651"></div>코웨이 (구독 일부)</div>
   </div>
 </header>
 
 <!-- ── 구독/렌탈 ──────────────────────────────────────────────── -->
 <section>
   <div class="section-header">
-    <span class="section-title">구독 / 렌탈 — 삼성 vs LG vs 코웨이</span>
+    <span class="section-title">구독 / 렌탈 — 삼성 vs LG</span>
     <div class="section-controls">
       <div class="filter-group" id="subscribe-filter">
         <button class="filter-btn active" onclick="filterSection('subscribe',13,this)">최근 1년</button>
@@ -551,7 +546,7 @@ function updateFooter(cid, cat, seriesSlice, brandsPerCat, labels) {{
         avgs[b] = vals.reduce((a,v)=>a+v,0) / (vals.length||1);
     }});
     const winner = brands.reduce((a,b)=>avgs[a]>=avgs[b]?a:b);
-    const COLORS = {{"삼성":"#1428A0","LG":"#A50034","코웨이":"#00A651"}};
+    const COLORS = {{"삼성":"#1428A0","LG":"#A50034"}};
     const parts = brands.map(b=>`<span style="color:${{COLORS[b]||'#333'}}">${{b}} ${{avgs[b].toFixed(1)}}</span>`);
     const wc = COLORS[winner]||'#333';
     document.getElementById(cid+'_footer').innerHTML =
@@ -562,7 +557,7 @@ function updateFooter(cid, cat, seriesSlice, brandsPerCat, labels) {{
 function updateBarChart(sid, sectionData, seriesSlice) {{
     const cats   = sectionData.cats;
     const allBrands = [...new Set(cats.flatMap(c=>sectionData.brandsPerCat[c]))];
-    const COLORS = {{"삼성":"#1428A0CC","LG":"#A50034CC","코웨이":"#00A651CC"}};
+    const COLORS = {{"삼성":"#1428A0CC","LG":"#A50034CC"}};
     const datasets = allBrands.map(b=>{{
         const vals = cats.map(cat=>{{
             const s = seriesSlice.series[cat][b];
@@ -583,7 +578,7 @@ function buildSection(sid, sectionData, months) {{
     const {{ periods, labels, series }} = slicedData(sectionData, months);
     const cats = sectionData.cats;
     const filterLabel = FILTER_LABELS[months] || '1년전';
-    const COLORS = {{"삼성":"#1428A0","LG":"#A50034","코웨이":"#00A651"}};
+    const COLORS = {{"삼성":"#1428A0","LG":"#A50034"}};
 
     cats.forEach((cat, i) => {{
         const cid = sid+'_'+i;
@@ -641,7 +636,7 @@ function buildSection(sid, sectionData, months) {{
 
     // 바 차트
     const allBrands = [...new Set(cats.flatMap(c=>sectionData.brandsPerCat[c]))];
-    const COLORSCC  = {{"삼성":"#1428A0CC","LG":"#A50034CC","코웨이":"#00A651CC"}};
+    const COLORSCC  = {{"삼성":"#1428A0CC","LG":"#A50034CC"}};
     const barDatasets = allBrands.map(b=>{{
         const vals = cats.map(cat=>{{
             const s = series[cat][b];

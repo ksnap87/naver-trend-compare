@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-네이버 데이터랩 API — 구독/렌탈 검색 트렌드 (삼성 vs LG vs 코웨이)
+네이버 데이터랩 API — 구독/렌탈 검색 트렌드 (삼성 vs LG)
 """
 
 import json
@@ -30,74 +30,67 @@ today      = datetime.today()
 end_date   = today.strftime("%Y-%m-%d")
 start_date = "2025-01-01"
 
-# ── 카테고리 정의 ──────────────────────────────────────────
-# three=True → 삼성/LG/코웨이 3자 비교
-# three=False → 삼성/LG 2자 비교
+# ── 카테고리 정의 (삼성 vs LG 2자 비교) ────────────────────
 CATEGORIES = [
     {
-        "name": "구독브랜드", "three": True,
+        "name": "구독브랜드",
         "samsung": ["삼성구독", "삼성 가전 구독", "비스포크 구독", "삼성 렌탈"],
         "lg":      ["LG케어솔루션", "케어솔루션", "LG 구독", "LG 렌탈"],
-        "coway":   ["코웨이", "코웨이 렌탈", "코웨이 구독"],
     },
     {
-        "name": "정수기구독", "three": True,
+        "name": "정수기구독",
         "samsung": ["삼성 정수기 렌탈", "비스포크 정수기 렌탈", "삼성 정수기 구독"],
         "lg":      ["LG 정수기 렌탈", "퓨리케어 렌탈", "LG 정수기 구독"],
-        "coway":   ["코웨이 정수기", "코웨이 정수기 렌탈", "코웨이 정수기 구독"],
     },
     {
-        "name": "공기청정기구독", "three": True,
+        "name": "공기청정기구독",
         "samsung": ["삼성 공기청정기 렌탈", "비스포크 공기청정기 렌탈", "삼성 공기청정기 구독"],
         "lg":      ["LG 공기청정기 렌탈", "퓨리케어 공기청정기 렌탈", "LG 공기청정기 구독"],
-        "coway":   ["코웨이 공기청정기", "코웨이 공기청정기 렌탈", "코웨이 공기청정기 구독"],
     },
     {
-        "name": "에어컨구독", "three": False,
+        "name": "에어컨구독",
         "samsung": ["삼성 에어컨 렌탈", "무풍에어컨 렌탈", "비스포크 에어컨 렌탈", "삼성 에어컨 구독"],
         "lg":      ["LG 에어컨 렌탈", "휘센 에어컨 렌탈", "LG 에어컨 구독"],
     },
     {
-        "name": "건조기구독", "three": False,
+        "name": "건조기구독",
         "samsung": ["삼성 건조기 렌탈", "비스포크 건조기 렌탈", "삼성 건조기 구독"],
         "lg":      ["LG 건조기 렌탈", "트롬 건조기 렌탈", "LG 건조기 구독"],
     },
     {
-        "name": "세탁기구독", "three": False,
+        "name": "세탁기구독",
         "samsung": ["삼성 세탁기 렌탈", "비스포크 세탁기 렌탈", "삼성 세탁기 구독"],
         "lg":      ["LG 세탁기 렌탈", "트롬 세탁기 렌탈", "LG 세탁기 구독"],
     },
     {
-        "name": "식기세척기구독", "three": False,
+        "name": "식기세척기구독",
         "samsung": ["삼성 식기세척기 렌탈", "비스포크 식기세척기 렌탈", "삼성 식기세척기 구독"],
         "lg":      ["LG 식기세척기 렌탈", "디오스 식기세척기 렌탈", "LG 식기세척기 구독"],
     },
     {
-        "name": "의류관리기구독", "three": False,
+        "name": "의류관리기구독",
         "samsung": ["에어드레서 렌탈", "삼성 에어드레서 렌탈", "에어드레서 구독"],
         "lg":      ["스타일러 렌탈", "LG 스타일러 렌탈", "스타일러 구독"],
     },
     {
-        "name": "청소기구독", "three": False,
+        "name": "청소기구독",
         "samsung": ["삼성 청소기 렌탈", "비스포크 제트 렌탈", "삼성 청소기 구독"],
         "lg":      ["LG 청소기 렌탈", "코드제로 렌탈", "LG 청소기 구독"],
     },
     {
-        "name": "로봇청소기구독", "three": False,
+        "name": "로봇청소기구독",
         "samsung": ["삼성 로봇청소기 렌탈", "비스포크 로봇청소기 렌탈", "삼성 로봇청소기 구독"],
         "lg":      ["LG 로봇청소기 렌탈", "코드제로 로봇청소기 렌탈", "LG 로봇청소기 구독"],
     },
     {
-        "name": "가전구독일반", "three": True,
+        "name": "가전구독일반",
         "samsung": ["삼성 가전 구독", "삼성 가전 렌탈", "삼성 구독 가전"],
         "lg":      ["LG 가전 구독", "LG 가전 렌탈", "LG 케어솔루션"],
-        "coway":   ["코웨이 렌탈 추천", "코웨이 가격", "코웨이 렌탈 가격"],
     },
 ]
 
 SAMSUNG_COLOR = "#1428A0"
 LG_COLOR      = "#A50034"
-COWAY_COLOR   = "#00A651"
 
 
 def call_api(keyword_groups: list) -> dict:
@@ -122,8 +115,6 @@ def fetch_category(cat: dict) -> dict:
         {"groupName": "삼성", "keywords": cat["samsung"]},
         {"groupName": "LG",   "keywords": cat["lg"]},
     ]
-    if cat.get("three"):
-        keyword_groups.append({"groupName": "코웨이", "keywords": cat["coway"]})
     data = call_api(keyword_groups)
     time.sleep(CALL_INTERVAL)
     return data
@@ -135,10 +126,6 @@ def process_results(data: dict) -> dict:
         name = group["title"]
         out[name] = {r["period"]: r["ratio"] for r in group["data"]}
     return out
-
-
-def determine_winner(avgs: dict) -> str:
-    return max(avgs, key=avgs.get)
 
 
 def main():
@@ -154,57 +141,45 @@ def main():
     summary_rows = []
 
     print(f"\n{'='*60}")
-    print(f"  네이버 데이터랩 — 구독/렌탈 트렌드 (삼성 vs LG vs 코웨이)")
+    print(f"  네이버 데이터랩 — 구독/렌탈 트렌드 (삼성 vs LG)")
     print(f"  기간: {start_date} ~ {end_date}  |  단위: 월간")
     print(f"{'='*60}")
 
     for cat in CATEGORIES:
-        label = "3자" if cat["three"] else "2자"
-        print(f"  [{cat['name']}] API 호출 중 ({label})...", end=" ", flush=True)
+        print(f"  [{cat['name']}] API 호출 중...", end=" ", flush=True)
         try:
             raw    = fetch_category(cat)
             parsed = process_results(raw)
 
-            samsung_data = parsed.get("삼성",  {})
-            lg_data      = parsed.get("LG",    {})
-            coway_data   = parsed.get("코웨이", {}) if cat["three"] else {}
+            samsung_data = parsed.get("삼성", {})
+            lg_data      = parsed.get("LG",   {})
             periods      = sorted(samsung_data.keys())
 
             s_avg = round(sum(samsung_data.values()) / len(samsung_data), 2) if samsung_data else 0
             l_avg = round(sum(lg_data.values())      / len(lg_data),      2) if lg_data      else 0
-            c_avg = round(sum(coway_data.values())   / len(coway_data),   2) if coway_data   else None
 
-            avgs = {"삼성": s_avg, "LG": l_avg}
-            if c_avg is not None:
-                avgs["코웨이"] = c_avg
-
-            winner = determine_winner(avgs)
-            c_str  = f" vs 코웨이 {c_avg:.1f}" if c_avg is not None else ""
-            print(f"완료  (삼성 {s_avg:.1f} vs LG {l_avg:.1f}{c_str}  →  {winner} 우세)")
+            winner = "삼성" if s_avg >= l_avg else "LG"
+            print(f"완료  (삼성 {s_avg:.1f} vs LG {l_avg:.1f}  →  {winner} 우세)")
 
             all_results.append({
                 "name":    cat["name"],
-                "three":   cat["three"],
                 "periods": periods,
                 "samsung": samsung_data,
                 "lg":      lg_data,
-                "coway":   coway_data,
                 "s_avg":   s_avg,
                 "l_avg":   l_avg,
-                "c_avg":   c_avg,
                 "winner":  winner,
             })
-            row = {"카테고리": cat["name"], "삼성_평균": s_avg, "LG_평균": l_avg, "코웨이_평균": c_avg if c_avg is not None else "", "우세브랜드": winner}
-            summary_rows.append(row)
+            summary_rows.append({"카테고리": cat["name"], "삼성_평균": s_avg, "LG_평균": l_avg, "우세브랜드": winner})
 
         except URLError as e:
             print(f"실패: {e}")
-            all_results.append({"name": cat["name"], "three": cat["three"], "periods": [], "samsung": {}, "lg": {}, "coway": {}, "s_avg": 0, "l_avg": 0, "c_avg": None, "winner": "N/A"})
-            summary_rows.append({"카테고리": cat["name"], "삼성_평균": 0, "LG_평균": 0, "코웨이_평균": "", "우세브랜드": "N/A"})
+            all_results.append({"name": cat["name"], "periods": [], "samsung": {}, "lg": {}, "s_avg": 0, "l_avg": 0, "winner": "N/A"})
+            summary_rows.append({"카테고리": cat["name"], "삼성_평균": 0, "LG_평균": 0, "우세브랜드": "N/A"})
 
     # ── CSV: Summary ──────────────────────────────────────
     with open(summary_path, "w", newline="", encoding="utf-8-sig") as f:
-        writer = csv.DictWriter(f, fieldnames=["카테고리", "삼성_평균", "LG_평균", "코웨이_평균", "우세브랜드"])
+        writer = csv.DictWriter(f, fieldnames=["카테고리", "삼성_평균", "LG_평균", "우세브랜드"])
         writer.writeheader()
         writer.writerows(summary_rows)
 
@@ -220,11 +195,6 @@ def main():
                 for p in all_periods:
                     row[p] = bdata.get(p, "")
                 writer.writerow(row)
-            if r["three"] and r["coway"]:
-                row = {"카테고리": r["name"], "브랜드": "코웨이"}
-                for p in all_periods:
-                    row[p] = r["coway"].get(p, "")
-                writer.writerow(row)
 
     # ── HTML Report ───────────────────────────────────────
     charts_js = []
@@ -236,11 +206,6 @@ def main():
         datasets = f"""
                     {{ label: '삼성', data: {s_json}, borderColor: '{SAMSUNG_COLOR}', backgroundColor: '{SAMSUNG_COLOR}22', tension: 0.3, fill: true }},
                     {{ label: 'LG',   data: {l_json}, borderColor: '{LG_COLOR}',      backgroundColor: '{LG_COLOR}22',      tension: 0.3, fill: true }}"""
-
-        if r["three"] and r["coway"]:
-            c_json  = json.dumps([r["coway"].get(p, 0) for p in r["periods"]])
-            datasets += f""",
-                    {{ label: '코웨이', data: {c_json}, borderColor: '{COWAY_COLOR}', backgroundColor: '{COWAY_COLOR}22', tension: 0.3, fill: true }}"""
 
         charts_js.append(f"""
         new Chart(document.getElementById('chart_{i}'), {{
@@ -255,7 +220,6 @@ def main():
     bar_labels  = json.dumps([r["name"] for r in all_results])
     bar_samsung = json.dumps([r["s_avg"] for r in all_results])
     bar_lg      = json.dumps([r["l_avg"] for r in all_results])
-    bar_coway   = json.dumps([r["c_avg"] if r["c_avg"] is not None else 0 for r in all_results])
 
     charts_js.append(f"""
         new Chart(document.getElementById('chart_summary'), {{
@@ -264,29 +228,27 @@ def main():
                 labels: {bar_labels},
                 datasets: [
                     {{ label: '삼성 평균', data: {bar_samsung}, backgroundColor: '{SAMSUNG_COLOR}CC' }},
-                    {{ label: 'LG 평균',   data: {bar_lg},      backgroundColor: '{LG_COLOR}CC' }},
-                    {{ label: '코웨이 평균', data: {bar_coway},  backgroundColor: '{COWAY_COLOR}CC' }}
+                    {{ label: 'LG 평균',   data: {bar_lg},      backgroundColor: '{LG_COLOR}CC' }}
                 ]
             }},
             options: {{ responsive: true, plugins: {{ title: {{ display: true, text: '전체 카테고리 평균 점수 비교' }} }}, scales: {{ y: {{ beginAtZero: true }} }} }}
         }});""")
 
     category_cards = ""
-    winner_colors  = {"삼성": SAMSUNG_COLOR, "LG": LG_COLOR, "코웨이": COWAY_COLOR}
+    winner_colors  = {"삼성": SAMSUNG_COLOR, "LG": LG_COLOR}
     for i, r in enumerate(all_results):
-        wc    = winner_colors.get(r["winner"], "#333")
-        c_str = f" vs 코웨이 {r['c_avg']:.1f}" if r["c_avg"] is not None else ""
+        wc = winner_colors.get(r["winner"], "#333")
         category_cards += f"""
         <div class="card">
             <canvas id="chart_{i}"></canvas>
-            <p class="winner" style="color:{wc}">▶ {r['winner']} 우세 (삼성 {r['s_avg']:.1f} vs LG {r['l_avg']:.1f}{c_str})</p>
+            <p class="winner" style="color:{wc}">▶ {r['winner']} 우세 (삼성 {r['s_avg']:.1f} vs LG {r['l_avg']:.1f})</p>
         </div>"""
 
     html = f"""<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>네이버 트렌드 — 구독/렌탈 (삼성 vs LG vs 코웨이) {today_str}</title>
+<title>네이버 트렌드 — 구독/렌탈 (삼성 vs LG) {today_str}</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   body {{ font-family: 'Malgun Gothic', sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }}
@@ -299,7 +261,7 @@ def main():
 </style>
 </head>
 <body>
-<h1>📊 네이버 검색 트렌드 — 구독/렌탈 (삼성 vs LG vs 코웨이)</h1>
+<h1>📊 네이버 검색 트렌드 — 구독/렌탈 (삼성 vs LG)</h1>
 <p class="subtitle">기간: {start_date} ~ {end_date} | 단위: 월간 | 생성일: {today_str}</p>
 <div class="summary-card"><canvas id="chart_summary"></canvas></div>
 <div class="grid">{category_cards}
@@ -314,20 +276,19 @@ def main():
         f.write(html)
 
     # ── 콘솔 요약표 ──────────────────────────────────────
-    print(f"\n{'='*64}")
+    print(f"\n{'='*60}")
     print(f"  카테고리별 우세 브랜드 요약")
-    print(f"{'='*64}")
-    print(f"  {'카테고리':<14}  {'삼성':>6}  {'LG':>6}  {'코웨이':>6}  {'우세':>6}")
-    print(f"  {'-'*52}")
-    wins = {"삼성": 0, "LG": 0, "코웨이": 0}
+    print(f"{'='*60}")
+    print(f"  {'카테고리':<14}  {'삼성':>6}  {'LG':>6}  {'우세':>6}")
+    print(f"  {'-'*44}")
+    wins = {"삼성": 0, "LG": 0}
     for r in all_results:
-        c_str = f"{r['c_avg']:>6.1f}" if r["c_avg"] is not None else f"{'—':>6}"
-        print(f"  {r['name']:<14}  {r['s_avg']:>6.1f}  {r['l_avg']:>6.1f}  {c_str}  {r['winner']:>6}")
+        print(f"  {r['name']:<14}  {r['s_avg']:>6.1f}  {r['l_avg']:>6.1f}  {r['winner']:>6}")
         if r["winner"] in wins:
             wins[r["winner"]] += 1
-    print(f"  {'-'*52}")
-    print(f"  전체 우세: 삼성 {wins['삼성']}개 / LG {wins['LG']}개 / 코웨이 {wins['코웨이']}개")
-    print(f"{'='*64}")
+    print(f"  {'-'*44}")
+    print(f"  전체 우세: 삼성 {wins['삼성']}개 / LG {wins['LG']}개")
+    print(f"{'='*60}")
     print(f"\n  저장 완료:")
     print(f"    {summary_path}")
     print(f"    {detail_path}")
